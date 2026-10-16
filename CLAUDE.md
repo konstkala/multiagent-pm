@@ -1,6 +1,7 @@
 # Multiagent PM
 
-Smart project management, run by a team of AI agents.
+AI-assisted project management. Managers run projects with their teams; agents classify and size tickets, build employee profiles from CVs, and recommend assignees. People make every consequential decision.
+Product plan: `docs/plans/2026-10-16-product-v1.md`.
 Also a learning project: it should make me an expert **DevOps engineer** and **AI engineer**. Measure cost and performance on everything.
 
 ## Stack
@@ -67,6 +68,10 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 5. Next.js + TS frontend: React ecosystem, typed client from OpenAPI, suits streaming agent output and approval UIs.
 6. SQLAlchemy 2 async + Alembic + asyncpg: typed ORM, versioned migrations, async driver that works on Windows.
 7. Local embeddings (fastembed, bge-small, 384 dims, cosine, HNSW): $0 per call, no extra API key. See ADR 0007.
+8. Triage is a fixed workflow, not an agent (0008); structured output through the gateway (0009); Postgres job queue + worker (0010).
+9. Self-hosted auth: argon2id, Google OIDC, opaque session cookies stored hashed (0011).
+10. Workspace → projects → per-project roles manager/employee (0012).
+11. Assignment agent recommends top 3; manager picks (0013). Story points + due dates (0014).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.
