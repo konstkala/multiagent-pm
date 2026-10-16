@@ -1,3 +1,4 @@
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -6,6 +7,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://pm:pm@localhost:5432/pm"
     log_level: str = "INFO"
+    anthropic_api_key: SecretStr | None = None
 
 
 settings = Settings()

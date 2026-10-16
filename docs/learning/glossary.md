@@ -21,6 +21,10 @@ A few words each. New technologies are added as they appear.
 | **httpx** | HTTP client | Calls the app in tests without starting a server |
 | **ruff** | Linter + formatter | Catches bugs and keeps one code style, very fast |
 | **pyright** | Static type checker | Catches type errors before runtime (strict mode) |
+| **Anthropic SDK** | Official Python client for the Claude API | Typed requests/responses, retries, timeouts; wrapped by `core/llm` so nothing else imports it |
+| **Prompt caching** | Server caches a stable prompt prefix | Cached tokens cost ~10% of normal input; the system prompt is marked cacheable |
+| **Effort** | Claude setting for how much the model thinks | Lower effort = fewer tokens, lower cost and latency; set per call |
+| **Fake / test double** | A stand-in object used in tests | Tests exercise our gateway without paid API calls |
 | **JSON logging** | One JSON object per log line | Log tools can search and filter by field (`request_id`, `status`) |
 | **Request ID** | Unique id per HTTP request | Follow one request through all logs |
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |
