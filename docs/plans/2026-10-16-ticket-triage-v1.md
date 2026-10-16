@@ -36,7 +36,7 @@ Status: gateway done 2026-10-16 (routing, cost, budget, refusals, logs, 11 tests
 - Tests use a fake client, no real calls. Cost impact: $0 (no callers yet).
 
 ## Phase 2: Tickets domain
-Status: table, migration 0002, CRUD API, audit logs, 15 DB tests done 2026-10-16. Open: backend Dockerfile + Trivy (needs CI or a local scan).
+Status: table, migration 0002, CRUD API, audit logs, 15 DB tests done 2026-10-16. Backend Dockerfile (multi-stage, non-root, healthcheck) + compose migrate job done. Open: image scan (Trivy) once CI exists.
 - `tickets` model + migration, service, CRUD API (`/tickets`), paginated list.
 - Fields include type, priority, component, labels, assignee, `duplicate_of`, embedding.
 - Backend Dockerfile (multi-stage, non-root, HEALTHCHECK); Trivy scan in CI.

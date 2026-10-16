@@ -30,6 +30,11 @@ A few words each. New technologies are added as they appear.
 | **Pagination** | Returning big lists in pages (`limit`, `offset`) | Keeps responses small and fast; `total` lets a UI show page counts |
 | **Audit log** | Record of who changed what | Traceability; ours logs changed field names, never ticket text |
 | **Transaction rollback in tests** | Undo each test's database changes | Tests stay independent and fast without recreating the database |
+| **Multi-stage build** | A Dockerfile with several `FROM` stages | Build tools stay in the first stage; only the result is copied into the final image |
+| **Layer cache** | Docker reuses unchanged build steps | Dependencies are copied before code, so code edits rebuild in seconds |
+| **Non-root user** | The container process isn't `root` | If the app is compromised, the attacker has fewer rights |
+| **.dockerignore** | Files excluded from the build | Keeps `.env`, `.venv` and tests out of the image |
+| **Migration job** | A one-off container that runs migrations and exits | Schema is updated before the new API starts; same idea as a Kubernetes Job |
 | **JSON logging** | One JSON object per log line | Log tools can search and filter by field (`request_id`, `status`) |
 | **Request ID** | Unique id per HTTP request | Follow one request through all logs |
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |

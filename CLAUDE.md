@@ -35,6 +35,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - DB (repo root): `docker compose up -d db`. Required for `db`-marked tests and `/health/db`
 - Migrate: `uv run alembic upgrade head` · new: `uv run alembic revision --autogenerate -m "<msg>"`
 - Dev server: `uv run fastapi dev app/main.py` → http://localhost:8000/docs
+- Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api on :8000). Stop a local dev server first: same port
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
 - Test one: `uv run pytest tests/test_health.py::test_health_returns_ok`
 - Tests use a throwaway `pm_test` database built from the migrations; each test is rolled back

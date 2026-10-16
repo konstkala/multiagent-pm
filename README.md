@@ -92,6 +92,13 @@ uv run alembic upgrade head              # apply migrations
 uv run fastapi dev app/main.py           # API docs at http://localhost:8000/docs
 ```
 
+Or run everything in containers (database, migration job, API):
+
+```sh
+docker compose up -d --build             # API at http://localhost:8000/docs
+docker compose down                      # stop; data is kept in a volume
+```
+
 Run the checks:
 
 ```sh
@@ -122,8 +129,8 @@ docs/
 |---|---|---|
 | 0 | Backend foundation: API, config, JSON logging, Postgres + pgvector, migrations, tests | Done |
 | 1 | `core/llm`: model routing, retries, cost logging, per-run budget | Built; tracing and call history table next |
-| 2 | Tickets domain, API and backend Dockerfile | Tickets API done; Dockerfile next |
-| 3 | Local embeddings and similar-ticket search | Planned |
+| 2 | Tickets domain, API and backend Dockerfile | Done |
+| 3 | Local embeddings and similar-ticket search | Next |
 | 4 | Triage workflow with LangGraph, background worker, approval pause | Planned |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |
 | 6 | Next.js frontend | Planned |
