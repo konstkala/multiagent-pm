@@ -62,7 +62,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 ## Decisions (summary; full records go in docs/adr/)
 1. Python + FastAPI over Node: the agent ecosystem is Python-first.
 2. Postgres + pgvector over NoSQL: relational domain; one DB for data, vectors, checkpoints, queue.
-3. LangGraph + PydanticAI for agents.
+3. LangGraph for orchestration; PydanticAI deferred until a tool-using agent needs it (ADR 0009).
 4. Model routing: Haiku workers, Sonnet orchestrator.
 5. Next.js + TS frontend: React ecosystem, typed client from OpenAPI, suits streaming agent output and approval UIs.
 6. SQLAlchemy 2 async + Alembic + asyncpg: typed ORM, versioned migrations, async driver that works on Windows.

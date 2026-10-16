@@ -1,6 +1,6 @@
 # 0003. LangGraph + PydanticAI for agents
 
-Status: accepted, 2026-10-16
+Status: accepted, 2026-10-16. PydanticAI part deferred by ADR 0009.
 
 ## Context
 Agents need durable state, resumable runs and human approval steps, plus typed inputs and outputs.
