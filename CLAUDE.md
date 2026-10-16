@@ -18,7 +18,8 @@ Also a learning project: it should make me an expert **DevOps engineer** and **A
 ```
 backend/app/
   api/        FastAPI routers. Thin: validate → call service
-  services/   business logic
+  services/   business logic (raise DomainError; commit; write audit logs)
+  schemas/    Pydantic request/response models
   agents/     graphs, nodes, prompts, tools
   db/         models, migrations
   core/       config, logging, LLM client
@@ -36,6 +37,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Dev server: `uv run fastapi dev app/main.py` → http://localhost:8000/docs
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
 - Test one: `uv run pytest tests/test_health.py::test_health_returns_ok`
+- Tests use a throwaway `pm_test` database built from the migrations; each test is rolled back
 - Check (run before saying done): `uv run ruff check --fix . && uv run ruff format . && uv run pyright && uv run pytest`
 
 ## Principles

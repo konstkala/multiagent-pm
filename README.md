@@ -45,12 +45,25 @@ Client ──► FastAPI ──► services ──► PostgreSQL + pgvector
 
 Ticket triage workflow (planned): embed the ticket → find similar tickets → one Haiku call returns type, priority, labels, duplicate and suggested assignee with a confidence → apply labels → pause for human approval of assignee and priority → apply. Estimated cost: about $0.001–0.002 per ticket. Details: [docs/plans/](docs/plans/2026-10-16-ticket-triage-v1.md).
 
+## API
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/tickets` | Create a ticket |
+| GET | `/tickets?limit=20&offset=0` | List, newest first, paginated |
+| GET | `/tickets/{id}` | Read one |
+| PATCH | `/tickets/{id}` | Change only the fields sent (null clears optional ones) |
+| GET | `/health`, `/health/db` | Liveness, readiness |
+
+Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
+
 ## Database
 
 PostgreSQL 17 with the **pgvector** extension, run locally in Docker (`pgvector/pgvector:pg17`). Data is kept in a Docker volume, so it survives container restarts.
 
-- **Today:** the schema is empty apart from the migration history. Migration `0001` enables pgvector.
-- **Planned tables:** tickets (with an embedding column for similar-ticket search), LLM call records for cost tracking, and the job queue. LangGraph adds its own checkpoint tables.
+- **Migrations:** `0001` enables pgvector, `0002` creates `tickets`.
+- **`tickets`:** UUID keys, text columns with CHECK constraints for status/type/priority, labels array, self-referencing `duplicate_of`, timestamps. Triage fields are empty until triage runs.
+- **Planned:** an embedding column for similar-ticket search, LLM call records for cost tracking, and the job queue. LangGraph adds its own checkpoint tables.
 - **Connection (local only):** host `localhost`, port `5432`, database `pm`, user `pm`, password `pm`. These are throwaway development credentials.
 
 Query it with `psql` inside the container:
@@ -89,7 +102,9 @@ uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run 
 
 ```
 backend/app/
-  api/        FastAPI routers and middleware (request IDs, request logs)
+  api/        FastAPI routers, error handlers, middleware (request IDs, request logs)
+  services/   business logic and audit logging
+  schemas/    request and response models
   core/       settings, structured logging
   core/llm/   LLM gateway: model routing, prompt caching, cost + budget, refusals
   db/         SQLAlchemy base and session, Alembic migrations
@@ -107,7 +122,7 @@ docs/
 |---|---|---|
 | 0 | Backend foundation: API, config, JSON logging, Postgres + pgvector, migrations, tests | Done |
 | 1 | `core/llm`: model routing, retries, cost logging, per-run budget | Built; tracing and call history table next |
-| 2 | Tickets domain, API and backend Dockerfile | Planned |
+| 2 | Tickets domain, API and backend Dockerfile | Tickets API done; Dockerfile next |
 | 3 | Local embeddings and similar-ticket search | Planned |
 | 4 | Triage workflow with LangGraph, background worker, approval pause | Planned |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |

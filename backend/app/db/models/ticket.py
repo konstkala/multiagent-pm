@@ -1,0 +1,70 @@
+import uuid
+from datetime import datetime
+from enum import StrEnum
+
+from sqlalchemy import ARRAY, DateTime, Enum, ForeignKey, String, Text, func, text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class TicketStatus(StrEnum):
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"
+    CLOSED = "closed"
+
+
+class TicketType(StrEnum):
+    BUG = "bug"
+    FEATURE = "feature"
+    TASK = "task"
+    QUESTION = "question"
+
+
+class TicketPriority(StrEnum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+def _values(cls: type[StrEnum]) -> list[str]:
+    return [member.value for member in cls]
+
+
+def _text_enum(cls: type[StrEnum]) -> Enum:
+    """Stored as text with a CHECK constraint: adding a value is a plain migration."""
+    return Enum(cls, native_enum=False, create_constraint=True, length=20, values_callable=_values)
+
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str] = mapped_column(Text, server_default="")
+    status: Mapped[TicketStatus] = mapped_column(
+        _text_enum(TicketStatus), server_default=TicketStatus.OPEN.value
+    )
+    labels: Mapped[list[str]] = mapped_column(ARRAY(String(50)), server_default=text("'{}'"))
+
+    # Nullable on purpose: empty until triage (or a person) sets them.
+    type: Mapped[TicketType | None] = mapped_column(_text_enum(TicketType))
+    priority: Mapped[TicketPriority | None] = mapped_column(_text_enum(TicketPriority))
+    component: Mapped[str | None] = mapped_column(String(100))
+    assignee: Mapped[str | None] = mapped_column(String(100))  # a users table comes later
+    duplicate_of: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("tickets.id", ondelete="SET NULL")
+    )
+
+    # clock_timestamp(), not now(): now() is the transaction start, so rows created in one
+    # transaction would tie and list in random order.
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp(), index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

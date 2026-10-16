@@ -25,6 +25,11 @@ A few words each. New technologies are added as they appear.
 | **Prompt caching** | Server caches a stable prompt prefix | Cached tokens cost ~10% of normal input; the system prompt is marked cacheable |
 | **Effort** | Claude setting for how much the model thinks | Lower effort = fewer tokens, lower cost and latency; set per call |
 | **Fake / test double** | A stand-in object used in tests | Tests exercise our gateway without paid API calls |
+| **UUID** | 128-bit random identifier | Ticket ids that can't be guessed or enumerated, unlike 1, 2, 3 |
+| **CHECK constraint** | A rule the database enforces on a column | Bad `status` values are rejected even if the app has a bug |
+| **Pagination** | Returning big lists in pages (`limit`, `offset`) | Keeps responses small and fast; `total` lets a UI show page counts |
+| **Audit log** | Record of who changed what | Traceability; ours logs changed field names, never ticket text |
+| **Transaction rollback in tests** | Undo each test's database changes | Tests stay independent and fast without recreating the database |
 | **JSON logging** | One JSON object per log line | Log tools can search and filter by field (`request_id`, `status`) |
 | **Request ID** | Unique id per HTTP request | Follow one request through all logs |
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |
