@@ -48,6 +48,10 @@ A few words each. New technologies are added as they appear.
 | **Account enumeration** | Learning which emails have accounts from responses or timing | Same messages and similar timing for known and unknown emails |
 | **Rate limiting (fixed window)** | Counting attempts per key per time window | Slows password guessing; stored in Postgres to work across replicas |
 | **Mailpit** | A fake SMTP server with a web inbox | Test real emails locally without sending anything |
+| **Multi-tenancy** | Many companies (tenants) sharing one app and database | Every query is scoped by workspace/project so data never leaks between them |
+| **RBAC (role-based access control)** | Permissions come from a role (manager, employee) | Simple rules per project; checked in the service layer, not the UI |
+| **404 instead of 403** | Hiding that a resource exists | "Forbidden" would confirm a project is real; "not found" reveals nothing |
+| **Atomic counter (`UPDATE ... RETURNING`)** | Increment and read in one statement | Two tickets created at once never get the same number |
 | **JSON logging** | One JSON object per log line | Log tools can search and filter by field (`request_id`, `status`) |
 | **Request ID** | Unique id per HTTP request | Follow one request through all logs |
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |

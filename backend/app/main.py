@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, health, tickets
+from app.api import auth, health, tickets, workspaces
 from app.api.errors import register_error_handlers
 from app.api.middleware import log_requests, require_csrf_header
 from app.core.config import settings
@@ -38,4 +38,5 @@ app.add_middleware(
 register_error_handlers(app)
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(workspaces.router)
 app.include_router(tickets.router)

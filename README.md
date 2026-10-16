@@ -31,6 +31,7 @@ Each choice is recorded with its reasoning in [docs/adr/](docs/adr/).
 - **Cost is a first-class metric.** Every LLM call goes through one gateway that logs model, tokens, cache use, dollar cost and latency, and enforces a per-run budget ($0.05).
 - **Untrusted input.** Ticket text never chooses tools or skips approvals.
 - **Human in the loop.** Cheap-to-undo changes (labels) apply automatically; assignee and priority changes wait for approval.
+- **Multi-tenancy.** Workspace → projects → per-project roles. Every query on project data checks membership; outsiders get 404 so they can't even learn a project exists. Similar-ticket search never crosses projects.
 - **Authentication.** No account enumeration (same responses for known and unknown emails, equal timing), single-use hashed email tokens, sessions revoked on password reset, CSRF header check, rate limits stored in Postgres so they hold across replicas.
 - **Logging.** One JSON object per line, a `request_id` on every line, audit events for state changes, and no secrets or user text in logs. Rules: [.claude/rules/logging.md](.claude/rules/logging.md).
 - **Migrations.** Every schema change is a reviewed Alembic migration; applied migrations are never edited.
@@ -52,17 +53,22 @@ Ticket triage workflow (planned; embedding and similar-ticket search already wor
 
 | Method | Path | Purpose |
 |---|---|---|
-| POST | `/tickets` | Create a ticket |
-| GET | `/tickets?limit=20&offset=0` | List, newest first, paginated |
+| POST, GET | `/workspaces` | Create a workspace (you become owner); list yours |
+| POST, GET | `/workspaces/{id}/projects` | Owners create projects (creator becomes manager); list your projects |
+| GET | `/projects/{id}` | Project with your role |
+| GET, POST | `/projects/{id}/members` | List members; managers add a verified user by email as manager or employee |
+| PATCH, DELETE | `/projects/{id}/members/{user_id}` | Change role or remove; a project always keeps one manager |
+| POST | `/projects/{id}/tickets` | Create a ticket (numbered per project: PM-1, PM-2, ...) |
+| GET | `/projects/{id}/tickets?limit=20&offset=0` | List, newest first, paginated |
 | GET | `/tickets/{id}` | Read one |
 | PATCH | `/tickets/{id}` | Change only the fields sent (null clears optional ones) |
-| GET | `/tickets/{id}/similar` | Most similar tickets by meaning (`limit`, `min_similarity`) |
+| GET | `/tickets/{id}/similar` | Most similar tickets in the same project (`limit`, `min_similarity`) |
 | POST | `/auth/sign-up`, `/auth/verify-email`, `/auth/resend-verification` | Create an account and confirm the email |
 | POST | `/auth/sign-in`, `/auth/sign-out` · GET `/auth/me` | Session cookie sign-in |
 | POST | `/auth/forgot-password`, `/auth/reset-password` | Reset by email link |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
-Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
+Everything except `/health` and `/auth/*` requires sign-in, and people outside a project get 404 for it. Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
 
 ## Database
 

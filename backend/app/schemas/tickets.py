@@ -40,6 +40,9 @@ class TicketRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    project_id: uuid.UUID
+    number: int
+    reporter_id: uuid.UUID | None
     title: str
     description: str
     status: TicketStatus

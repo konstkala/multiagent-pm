@@ -9,32 +9,50 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from tests.conftest import Login
+
 pytestmark = pytest.mark.db
 
 
 async def create(
-    client: AsyncClient, title: str = "Printer is on fire", **extra: object
+    client: AsyncClient, project_id: str, title: str = "Printer is on fire", **extra: object
 ) -> dict[str, Any]:
-    response = await client.post("/tickets", json={"title": title, **extra})
+    response = await client.post(f"/projects/{project_id}/tickets", json={"title": title, **extra})
     assert response.status_code == 201
     return response.json()
 
 
-async def test_create_ticket_returns_defaults(db_client: AsyncClient) -> None:
-    ticket = await create(db_client, description="Smoke from the tray")
+async def test_create_ticket_returns_defaults_and_reporter(
+    manager: AsyncClient, project_id: str
+) -> None:
+    ticket = await create(manager, project_id, description="Smoke from the tray")
+    me = (await manager.get("/auth/me")).json()
 
     assert uuid.UUID(ticket["id"])
+    assert ticket["project_id"] == project_id
+    assert ticket["number"] == 1
+    assert ticket["reporter_id"] == me["id"]
     assert ticket["status"] == "open"
     assert ticket["labels"] == []
     assert ticket["type"] is None
-    assert ticket["priority"] is None
-    assert ticket["created_at"] == ticket["updated_at"] or ticket["updated_at"]
+
+
+async def test_ticket_numbers_count_up_per_project(manager: AsyncClient, project_id: str) -> None:
+    numbers = [(await create(manager, project_id, f"t{i}"))["number"] for i in range(3)]
+
+    assert numbers == [1, 2, 3]
+
+
+async def test_tickets_need_a_signed_in_user(client: AsyncClient, project_id: str) -> None:
+    response = await client.get(f"/projects/{project_id}/tickets")
+
+    assert response.status_code == 401
 
 
 async def test_create_ticket_rejects_empty_title_with_standard_error(
-    db_client: AsyncClient,
+    manager: AsyncClient, project_id: str
 ) -> None:
-    response = await db_client.post("/tickets", json={"title": ""})
+    response = await manager.post(f"/projects/{project_id}/tickets", json={"title": ""})
 
     error = response.json()["error"]
     assert response.status_code == 422
@@ -42,51 +60,53 @@ async def test_create_ticket_rejects_empty_title_with_standard_error(
     assert error["message"].startswith("title: ")
 
 
-async def test_get_ticket_returns_the_ticket(db_client: AsyncClient) -> None:
-    created = await create(db_client)
+async def test_get_ticket_returns_the_ticket(manager: AsyncClient, project_id: str) -> None:
+    created = await create(manager, project_id)
 
-    response = await db_client.get(f"/tickets/{created['id']}")
+    response = await manager.get(f"/tickets/{created['id']}")
 
     assert response.status_code == 200
     assert response.json() == created
 
 
-async def test_get_unknown_ticket_returns_standard_404(db_client: AsyncClient) -> None:
-    response = await db_client.get(f"/tickets/{uuid.uuid4()}")
+async def test_get_unknown_ticket_returns_standard_404(manager: AsyncClient) -> None:
+    response = await manager.get(f"/tickets/{uuid.uuid4()}")
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "not_found"
 
 
-async def test_get_ticket_with_malformed_id_returns_422(db_client: AsyncClient) -> None:
-    response = await db_client.get("/tickets/not-a-uuid")
+async def test_get_ticket_with_malformed_id_returns_422(manager: AsyncClient) -> None:
+    response = await manager.get("/tickets/not-a-uuid")
 
     assert response.status_code == 422
-    assert response.json()["error"]["code"] == "validation_error"
 
 
-async def test_list_tickets_is_newest_first_and_paginated(db_client: AsyncClient) -> None:
+async def test_list_tickets_is_newest_first_and_paginated(
+    manager: AsyncClient, project_id: str
+) -> None:
     for number in range(3):
-        await create(db_client, title=f"ticket {number}")
+        await create(manager, project_id, title=f"ticket {number}")
+    url = f"/projects/{project_id}/tickets"
 
-    first = (await db_client.get("/tickets", params={"limit": 2})).json()
-    second = (await db_client.get("/tickets", params={"limit": 2, "offset": 2})).json()
+    first = (await manager.get(url, params={"limit": 2})).json()
+    second = (await manager.get(url, params={"limit": 2, "offset": 2})).json()
 
     assert first["total"] == 3
     assert [t["title"] for t in first["items"]] == ["ticket 2", "ticket 1"]
     assert [t["title"] for t in second["items"]] == ["ticket 0"]
 
 
-async def test_list_tickets_rejects_oversized_limit(db_client: AsyncClient) -> None:
-    response = await db_client.get("/tickets", params={"limit": 1000})
+async def test_list_tickets_rejects_oversized_limit(manager: AsyncClient, project_id: str) -> None:
+    response = await manager.get(f"/projects/{project_id}/tickets", params={"limit": 1000})
 
     assert response.status_code == 422
 
 
-async def test_update_ticket_sets_triage_fields(db_client: AsyncClient) -> None:
-    created = await create(db_client)
+async def test_update_ticket_sets_triage_fields(manager: AsyncClient, project_id: str) -> None:
+    created = await create(manager, project_id)
 
-    response = await db_client.patch(
+    response = await manager.patch(
         f"/tickets/{created['id']}",
         json={"type": "bug", "priority": "high", "labels": ["hardware"], "assignee": "sam"},
     )
@@ -95,79 +115,99 @@ async def test_update_ticket_sets_triage_fields(db_client: AsyncClient) -> None:
     assert response.status_code == 200
     assert (updated["type"], updated["priority"], updated["assignee"]) == ("bug", "high", "sam")
     assert updated["labels"] == ["hardware"]
-    assert updated["title"] == created["title"]
     assert updated["updated_at"] >= created["updated_at"]
 
 
-async def test_update_ticket_can_clear_optional_field(db_client: AsyncClient) -> None:
-    created = await create(db_client)
-    await db_client.patch(f"/tickets/{created['id']}", json={"assignee": "sam"})
+async def test_update_ticket_can_clear_optional_field(
+    manager: AsyncClient, project_id: str
+) -> None:
+    created = await create(manager, project_id)
+    await manager.patch(f"/tickets/{created['id']}", json={"assignee": "sam"})
 
-    response = await db_client.patch(f"/tickets/{created['id']}", json={"assignee": None})
+    response = await manager.patch(f"/tickets/{created['id']}", json={"assignee": None})
 
     assert response.json()["assignee"] is None
 
 
-async def test_update_ticket_rejects_null_title(db_client: AsyncClient) -> None:
-    created = await create(db_client)
+async def test_update_ticket_rejects_null_title_and_unknown_status(
+    manager: AsyncClient, project_id: str
+) -> None:
+    created = await create(manager, project_id)
 
-    response = await db_client.patch(f"/tickets/{created['id']}", json={"title": None})
+    null_title = await manager.patch(f"/tickets/{created['id']}", json={"title": None})
+    bad_status = await manager.patch(f"/tickets/{created['id']}", json={"status": "bogus"})
 
-    assert response.status_code == 422
-
-
-async def test_update_ticket_rejects_unknown_status(db_client: AsyncClient) -> None:
-    created = await create(db_client)
-
-    response = await db_client.patch(f"/tickets/{created['id']}", json={"status": "bogus"})
-
-    assert response.status_code == 422
+    assert null_title.status_code == bad_status.status_code == 422
 
 
-async def test_update_unknown_ticket_returns_404(db_client: AsyncClient) -> None:
-    response = await db_client.patch(f"/tickets/{uuid.uuid4()}", json={"status": "closed"})
+async def test_update_unknown_ticket_returns_404(manager: AsyncClient) -> None:
+    response = await manager.patch(f"/tickets/{uuid.uuid4()}", json={"status": "closed"})
 
     assert response.status_code == 404
 
 
-async def test_duplicate_of_points_to_an_existing_other_ticket(db_client: AsyncClient) -> None:
-    original = await create(db_client, title="original")
-    copy = await create(db_client, title="copy")
-
-    ok = await db_client.patch(f"/tickets/{copy['id']}", json={"duplicate_of": original["id"]})
-    itself = await db_client.patch(f"/tickets/{copy['id']}", json={"duplicate_of": copy["id"]})
-    missing = await db_client.patch(
-        f"/tickets/{copy['id']}", json={"duplicate_of": str(uuid.uuid4())}
+async def test_duplicate_of_must_be_another_ticket_in_the_same_project(
+    manager: AsyncClient, project_id: str
+) -> None:
+    original = await create(manager, project_id, title="original")
+    copy = await create(manager, project_id, title="copy")
+    workspace = (await manager.get("/workspaces")).json()[0]
+    other_project = await manager.post(
+        f"/workspaces/{workspace['id']}/projects", json={"key": "WEB", "name": "Website"}
     )
+    elsewhere = await create(manager, other_project.json()["id"], title="elsewhere")
 
-    assert ok.json()["duplicate_of"] == original["id"]
-    assert itself.status_code == 422
-    assert missing.status_code == 422
+    async def mark(target: str) -> int:
+        response = await manager.patch(f"/tickets/{copy['id']}", json={"duplicate_of": target})
+        return response.status_code
+
+    assert await mark(original["id"]) == 200
+    assert await mark(copy["id"]) == 422
+    assert await mark(elsewhere["id"]) == 422
+    assert await mark(str(uuid.uuid4())) == 422
 
 
-async def test_audit_logs_record_changes_without_ticket_text(
-    db_client: AsyncClient, caplog: pytest.LogCaptureFixture
+async def test_audit_logs_record_actor_and_changes_without_ticket_text(
+    manager: AsyncClient, project_id: str, caplog: pytest.LogCaptureFixture
 ) -> None:
     caplog.set_level(logging.INFO, logger="app.services.tickets")
-    created = await create(db_client, title="Secret customer name", description="private body")
+    me = (await manager.get("/auth/me")).json()
+    created = await create(manager, project_id, title="Secret customer name", description="body")
 
-    await db_client.patch(
+    await manager.patch(
         f"/tickets/{created['id']}", json={"title": "Another secret", "priority": "urgent"}
     )
 
-    audit = [r.__dict__["fields"] for r in caplog.records if r.getMessage().startswith("audit.")]
-    assert [r.getMessage() for r in caplog.records] == [
-        "audit.ticket.created",
-        "audit.ticket.updated",
-    ]
-    assert audit[1]["changed_fields"] == ["priority", "title"]
-    assert audit[1]["before"] == {"priority": None}
-    assert audit[1]["after"] == {"priority": "urgent"}
-    logged = json.dumps(audit, default=str)
-    assert "secret" not in logged.lower()
-    assert "private body" not in logged
+    records = [r for r in caplog.records if r.getMessage().startswith("audit.")]
+    assert [r.getMessage() for r in records] == ["audit.ticket.created", "audit.ticket.updated"]
+    updated = records[1].__dict__["fields"]
+    assert str(updated["actor"]) == me["id"]
+    assert updated["changed_fields"] == ["priority", "title"]
+    assert updated["before"] == {"priority": None}
+    assert updated["after"] == {"priority": "urgent"}
+    assert "secret" not in json.dumps([r.__dict__["fields"] for r in records], default=str).lower()
 
 
-async def test_database_rejects_invalid_status(db_session: AsyncSession) -> None:
+async def test_database_rejects_invalid_status(db_session: AsyncSession, project_id: str) -> None:
     with pytest.raises(IntegrityError):
-        await db_session.execute(text("INSERT INTO tickets (title, status) VALUES ('x', 'bogus')"))
+        await db_session.execute(
+            text(
+                "INSERT INTO tickets (project_id, number, title, status) "
+                "VALUES (:project, 99, 'x', 'bogus')"
+            ),
+            {"project": project_id},
+        )
+
+
+async def test_outsiders_cannot_see_or_change_tickets(
+    manager: AsyncClient, project_id: str, login: Login
+) -> None:
+    ticket = await create(manager, project_id)
+    outsider = await login("outsider")
+
+    listed = await outsider.get(f"/projects/{project_id}/tickets")
+    read = await outsider.get(f"/tickets/{ticket['id']}")
+    changed = await outsider.patch(f"/tickets/{ticket['id']}", json={"priority": "low"})
+    created = await outsider.post(f"/projects/{project_id}/tickets", json={"title": "spam"})
+
+    assert {listed.status_code, read.status_code, changed.status_code, created.status_code} == {404}

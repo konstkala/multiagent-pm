@@ -1,5 +1,6 @@
 import asyncio
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,11 @@ from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
+from app.api.deps import SESSION_COOKIE
+from app.api.middleware import CSRF_HEADER
 from app.core.config import settings
+from app.core.security import hash_token, new_token
+from app.db.models import User, UserSession
 from app.db.session import get_session
 from app.main import app
 from app.services.email import get_email_sender
@@ -19,6 +24,8 @@ from tests.fakes import FakeEmbedder, Outbox
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_DB = "pm_test"
+
+Login = Callable[[str], Awaitable[AsyncClient]]
 
 
 @pytest.fixture
@@ -83,3 +90,50 @@ async def db_client(
     app.dependency_overrides[get_embedder] = lambda: embedder
     app.dependency_overrides[get_email_sender] = lambda: outbox
     return client
+
+
+@pytest.fixture
+async def login(db_client: AsyncClient, db_session: AsyncSession) -> AsyncGenerator[Login]:
+    """Creates a verified, signed-in user and returns their own browser-like client."""
+    browsers: list[AsyncClient] = []
+
+    async def sign_in_as(name: str) -> AsyncClient:
+        now = datetime.now(UTC)
+        user = User(email=f"{name}@example.com", display_name=name.title(), email_verified_at=now)
+        db_session.add(user)
+        await db_session.flush()
+        token = new_token()
+        db_session.add(
+            UserSession(
+                user_id=user.id, token_hash=hash_token(token), expires_at=now + timedelta(days=1)
+            )
+        )
+        await db_session.flush()
+        browser = AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="https://test",
+            cookies={SESSION_COOKIE: token},
+            headers={CSRF_HEADER: "fetch"},
+        )
+        browsers.append(browser)
+        return browser
+
+    yield sign_in_as
+    for browser in browsers:
+        await browser.aclose()
+
+
+@pytest.fixture
+async def manager(login: Login) -> AsyncClient:
+    return await login("manager")
+
+
+@pytest.fixture
+async def project_id(manager: AsyncClient) -> str:
+    """A workspace with one project, PM, managed by `manager`."""
+    workspace = (await manager.post("/workspaces", json={"name": "Acme"})).json()
+    project = await manager.post(
+        f"/workspaces/{workspace['id']}/projects", json={"key": "PM", "name": "Platform"}
+    )
+    assert project.status_code == 201
+    return project.json()["id"]
