@@ -3,10 +3,11 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, tickets
+from app.api import auth, health, tickets
 from app.api.errors import register_error_handlers
-from app.api.middleware import log_requests
+from app.api.middleware import log_requests, require_csrf_header
 from app.core.config import settings
 from app.core.logging import configure_logging
 from app.db.session import engine
@@ -24,7 +25,17 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(title="Multiagent PM", lifespan=lifespan)
+# The last one added runs first: CORS answers preflights, then requests are logged, then checked.
+app.middleware("http")(require_csrf_header)
 app.middleware("http")(log_requests)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,  # the session cookie
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 register_error_handlers(app)
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(tickets.router)

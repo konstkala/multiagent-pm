@@ -40,6 +40,14 @@ A few words each. New technologies are added as they appear.
 | **Cosine similarity** | How closely two vectors point the same way (1 = same meaning) | The metric bge models are trained for; our `min_similarity` cut-off uses it |
 | **HNSW index** | Graph index for approximate nearest-neighbour search | Keeps similar-ticket queries fast as tickets grow, at a small recall cost |
 | **Dependency injection (FastAPI `Depends`)** | The framework passes in what a function needs | Tests swap the real embedder for a fake without touching the code |
+| **argon2id** | Password hashing algorithm, slow on purpose | Makes stolen password hashes expensive to crack; OWASP's first choice |
+| **Session cookie (opaque token)** | A random token the browser sends back on each request | Revocable (sign out everywhere), unlike a JWT; only its hash is stored |
+| **httpOnly / Secure / SameSite** | Cookie flags | Scripts can't read it (XSS), HTTPS only, not sent on cross-site POSTs |
+| **CSRF** | Another site making your browser send a request to ours | Blocked by SameSite plus a required custom header |
+| **CORS** | Browser rule for which sites may call our API | Only our frontend's origin may send credentialed requests |
+| **Account enumeration** | Learning which emails have accounts from responses or timing | Same messages and similar timing for known and unknown emails |
+| **Rate limiting (fixed window)** | Counting attempts per key per time window | Slows password guessing; stored in Postgres to work across replicas |
+| **Mailpit** | A fake SMTP server with a web inbox | Test real emails locally without sending anything |
 | **JSON logging** | One JSON object per log line | Log tools can search and filter by field (`request_id`, `status`) |
 | **Request ID** | Unique id per HTTP request | Follow one request through all logs |
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |

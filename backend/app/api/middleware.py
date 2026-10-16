@@ -6,6 +6,8 @@ from uuid import uuid4
 from fastapi import Request, Response
 from starlette.middleware.base import RequestResponseEndpoint
 
+from app.api.deps import SESSION_COOKIE
+from app.api.errors import error_response
 from app.core.logging import log_fields, request_id_var
 
 logger = logging.getLogger(__name__)
@@ -40,3 +42,20 @@ async def log_requests(request: Request, call_next: RequestResponseEndpoint) -> 
             ),
         )
         request_id_var.reset(token)
+
+
+_UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+CSRF_HEADER = "x-requested-with"
+
+
+async def require_csrf_header(request: Request, call_next: RequestResponseEndpoint) -> Response:
+    """Browsers only add custom headers to cross-site requests after a CORS check we control,
+    so a forged form post from another site can't carry it."""
+    if (
+        request.method in _UNSAFE_METHODS
+        and SESSION_COOKIE in request.cookies
+        and CSRF_HEADER not in request.headers
+    ):
+        logger.warning("security.csrf_header_missing", extra=log_fields(path=request.url.path))
+        return error_response(403, "csrf_header_missing", f"Send the {CSRF_HEADER} header")
+    return await call_next(request)

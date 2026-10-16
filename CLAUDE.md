@@ -24,7 +24,7 @@ backend/app/
   schemas/    Pydantic request/response models
   agents/     graphs, nodes, prompts, tools
   db/         models, migrations
-  core/       config, logging, LLM client
+  core/       config, logging, errors, security (hashing, tokens), LLM client
 backend/tests/
 frontend/     Next.js app
 docs/adr/     one decision per file
@@ -37,6 +37,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - DB (repo root): `docker compose up -d db`. Required for `db`-marked tests and `/health/db`
 - Migrate: `uv run alembic upgrade head` · new: `uv run alembic revision --autogenerate -m "<msg>"`
 - Dev server: `uv run fastapi dev app/main.py` → http://localhost:8000/docs
+- Fake inbox (Mailpit, part of the compose stack): http://localhost:8025
 - Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api on :8000). Stop a local dev server first: same port
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
 - Real embedding model test (free, downloads the model once): `uv run pytest -m model`

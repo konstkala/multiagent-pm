@@ -3,8 +3,9 @@ x-backend: &backend
   image: pm-backend:dev
   build: ./backend
   environment:
-    # Inside the compose network the database is reached by service name, not localhost.
+    # Inside the compose network services are reached by name, not localhost.
     DATABASE_URL: postgresql+asyncpg://pm:pm@db:5432/pm
+    SMTP_HOST: mailpit
 
 services:
   db:
@@ -22,6 +23,13 @@ services:
       interval: 2s
       timeout: 3s
       retries: 15
+
+  # Fake inbox for development: every email the app sends shows up at http://localhost:8025.
+  mailpit:
+    image: axllent/mailpit:v1.29
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # web inbox
 
   # One-off job: apply migrations, then exit. Same pattern as a Kubernetes Job.
   migrate:

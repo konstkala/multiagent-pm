@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** The backend foundation is done. The agent workflow is next. See [Roadmap](#roadmap) for what exists and what doesn't.
+> **Status: early development.** Backend foundation, tickets, embeddings and email/password auth are done. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -19,6 +19,7 @@ It is also a learning project, built the way a production system would be: conta
 | Dependencies | uv with a lockfile | Reproducible installs |
 | Containers | Docker, Docker Compose | Same local database for everyone |
 | Quality | pytest, ruff, pyright (strict) | Tests, lint, and static types |
+| Auth | Self-hosted: argon2id passwords, opaque session cookies stored hashed, email verification and reset via SMTP (Mailpit locally); Google sign-in next | Security engineering without a vendor |
 | Observability | Structured JSON logs with request IDs (done); Langfuse tracing (planned) | Trace a request and see tokens and cost per run |
 | Frontend | Next.js + TypeScript (planned) | Streaming progress and approval screens |
 | Cloud / CI / IaC | GitHub Actions, Terraform, Kubernetes (planned) | See the roadmap |
@@ -30,6 +31,7 @@ Each choice is recorded with its reasoning in [docs/adr/](docs/adr/).
 - **Cost is a first-class metric.** Every LLM call goes through one gateway that logs model, tokens, cache use, dollar cost and latency, and enforces a per-run budget ($0.05).
 - **Untrusted input.** Ticket text never chooses tools or skips approvals.
 - **Human in the loop.** Cheap-to-undo changes (labels) apply automatically; assignee and priority changes wait for approval.
+- **Authentication.** No account enumeration (same responses for known and unknown emails, equal timing), single-use hashed email tokens, sessions revoked on password reset, CSRF header check, rate limits stored in Postgres so they hold across replicas.
 - **Logging.** One JSON object per line, a `request_id` on every line, audit events for state changes, and no secrets or user text in logs. Rules: [.claude/rules/logging.md](.claude/rules/logging.md).
 - **Migrations.** Every schema change is a reviewed Alembic migration; applied migrations are never edited.
 - **Health checks.** `/health` (liveness) and `/health/db` (readiness) are separate on purpose.
@@ -55,9 +57,12 @@ Ticket triage workflow (planned; embedding and similar-ticket search already wor
 | GET | `/tickets/{id}` | Read one |
 | PATCH | `/tickets/{id}` | Change only the fields sent (null clears optional ones) |
 | GET | `/tickets/{id}/similar` | Most similar tickets by meaning (`limit`, `min_similarity`) |
+| POST | `/auth/sign-up`, `/auth/verify-email`, `/auth/resend-verification` | Create an account and confirm the email |
+| POST | `/auth/sign-in`, `/auth/sign-out` · GET `/auth/me` | Session cookie sign-in |
+| POST | `/auth/forgot-password`, `/auth/reset-password` | Reset by email link |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
-Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
+Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
 
 ## Database
 

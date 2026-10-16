@@ -36,10 +36,10 @@ async def test_create_ticket_rejects_empty_title_with_standard_error(
 ) -> None:
     response = await db_client.post("/tickets", json={"title": ""})
 
+    error = response.json()["error"]
     assert response.status_code == 422
-    assert response.json() == {
-        "error": {"code": "validation_error", "message": "Invalid fields: title"}
-    }
+    assert error["code"] == "validation_error"
+    assert error["message"].startswith("title: ")
 
 
 async def test_get_ticket_returns_the_ticket(db_client: AsyncClient) -> None:

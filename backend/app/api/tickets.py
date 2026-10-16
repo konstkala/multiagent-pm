@@ -2,10 +2,9 @@ import uuid
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import SessionDep
 from app.api.errors import ErrorResponse
-from app.db.session import get_session
 from app.schemas.tickets import (
     SimilarTicket,
     SimilarTickets,
@@ -19,7 +18,6 @@ from app.services.embeddings import Embedder, get_embedder
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 EmbedderDep = Annotated[Embedder, Depends(get_embedder)]
 
 # No authentication yet, so every change is attributed to this placeholder.

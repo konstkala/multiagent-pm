@@ -3,10 +3,11 @@ from datetime import datetime
 from enum import StrEnum
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import ARRAY, DateTime, Enum, ForeignKey, Index, String, Text, func, text
+from sqlalchemy import ARRAY, DateTime, ForeignKey, Index, String, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+from app.db.types import text_enum
 
 EMBEDDING_DIM = 384
 
@@ -32,15 +33,6 @@ class TicketPriority(StrEnum):
     URGENT = "urgent"
 
 
-def _values(cls: type[StrEnum]) -> list[str]:
-    return [member.value for member in cls]
-
-
-def _text_enum(cls: type[StrEnum]) -> Enum:
-    """Stored as text with a CHECK constraint: adding a value is a plain migration."""
-    return Enum(cls, native_enum=False, create_constraint=True, length=20, values_callable=_values)
-
-
 class Ticket(Base):
     __tablename__ = "tickets"
     __table_args__ = (
@@ -60,13 +52,13 @@ class Ticket(Base):
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str] = mapped_column(Text, server_default="")
     status: Mapped[TicketStatus] = mapped_column(
-        _text_enum(TicketStatus), server_default=TicketStatus.OPEN.value
+        text_enum(TicketStatus), server_default=TicketStatus.OPEN.value
     )
     labels: Mapped[list[str]] = mapped_column(ARRAY(String(50)), server_default=text("'{}'"))
 
     # Nullable on purpose: empty until triage (or a person) sets them.
-    type: Mapped[TicketType | None] = mapped_column(_text_enum(TicketType))
-    priority: Mapped[TicketPriority | None] = mapped_column(_text_enum(TicketPriority))
+    type: Mapped[TicketType | None] = mapped_column(text_enum(TicketType))
+    priority: Mapped[TicketPriority | None] = mapped_column(text_enum(TicketPriority))
     component: Mapped[str | None] = mapped_column(String(100))
     assignee: Mapped[str | None] = mapped_column(String(100))  # a users table comes later
     duplicate_of: Mapped[uuid.UUID | None] = mapped_column(

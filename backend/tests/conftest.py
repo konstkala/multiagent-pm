@@ -13,8 +13,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engin
 from app.core.config import settings
 from app.db.session import get_session
 from app.main import app
+from app.services.email import get_email_sender
 from app.services.embeddings import Embedder, get_embedder
-from tests.fakes import FakeEmbedder
+from tests.fakes import FakeEmbedder, Outbox
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_DB = "pm_test"
@@ -22,7 +23,7 @@ TEST_DB = "pm_test"
 
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient]:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as c:
         yield c
     app.dependency_overrides.clear()
 
@@ -67,12 +68,18 @@ def embedder() -> Embedder:
 
 
 @pytest.fixture
+def outbox() -> Outbox:
+    return Outbox()
+
+
+@pytest.fixture
 async def db_client(
-    client: AsyncClient, db_session: AsyncSession, embedder: Embedder
+    client: AsyncClient, db_session: AsyncSession, embedder: Embedder, outbox: Outbox
 ) -> AsyncClient:
     async def use_test_session() -> AsyncGenerator[AsyncSession]:
         yield db_session
 
     app.dependency_overrides[get_session] = use_test_session
     app.dependency_overrides[get_embedder] = lambda: embedder
+    app.dependency_overrides[get_email_sender] = lambda: outbox
     return client

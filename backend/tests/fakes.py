@@ -4,6 +4,7 @@ import zlib
 from collections.abc import Sequence
 
 from app.db.models.ticket import EMBEDDING_DIM
+from app.services.email import EmailMessage
 
 
 class FakeEmbedder:
@@ -28,3 +29,13 @@ class BrokenEmbedder:
 
     async def embed(self, texts: Sequence[str]) -> list[list[float]]:
         raise RuntimeError("model unavailable")
+
+
+class Outbox:
+    """Collects emails instead of sending them."""
+
+    def __init__(self) -> None:
+        self.sent: list[EmailMessage] = []
+
+    async def send(self, message: EmailMessage) -> None:
+        self.sent.append(message)

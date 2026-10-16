@@ -9,6 +9,25 @@ class DomainError(Exception):
         self.message = message
 
 
+class UnauthorizedError(DomainError):
+    status_code = 401
+    code = "unauthorized"
+
+
+class ForbiddenError(DomainError):
+    status_code = 403
+    code = "forbidden"
+
+
+class EmailNotVerifiedError(ForbiddenError):
+    code = "email_not_verified"
+
+
+class RateLimitedError(DomainError):
+    status_code = 429
+    code = "rate_limited"
+
+
 class NotFoundError(DomainError):
     status_code = 404
     code = "not_found"
