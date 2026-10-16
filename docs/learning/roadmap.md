@@ -29,7 +29,7 @@ Phases refer to [the triage v1 plan](../plans/2026-10-16-ticket-triage-v1.md).
 | ✓ | Skill | What you do in this project | When |
 |---|---|---|---|
 | [ ] | LLM API fundamentals | Tokens, context, pricing, effort, thinking, streaming, stop reasons | Phase 1 |
-| [ ] | LLM gateway | `core/llm`: routing, retries, refusals, cost logging, budget guard (built; tick after the first real call) | Phase 1 |
+| [x] | LLM gateway | `core/llm`: routing, retries, refusals, cost logging, budget guard (first real call passed 2026-10-16) | Phase 1 |
 | [ ] | LLM observability | Langfuse traces: tokens, $ and latency per run | Phase 1 |
 | [ ] | Embeddings + retrieval | Local embeddings, pgvector HNSW, similarity thresholds | Phase 3 |
 | [ ] | Structured output | PydanticAI typed outputs, validation, retries on bad output | Phase 4 |

@@ -173,6 +173,22 @@ async def test_complete_raises_on_refusal_and_still_counts_cost() -> None:
     assert budget.spent_usd > 0
 
 
+async def test_complete_logs_api_error_details(caplog: pytest.LogCaptureFixture) -> None:
+    error = anthropic.APIConnectionError(
+        request=httpx2.Request("POST", "https://api.anthropic.com/v1/messages")
+    )
+    client, _ = make_client(error)
+
+    with pytest.raises(LLMError):
+        await complete(client, RunBudget("run-9"))
+
+    record = next(r for r in caplog.records if r.getMessage() == "llm.error")
+    fields = record.__dict__["fields"]
+    assert fields["run_id"] == "run-9"
+    assert fields["error"] == "APIConnectionError"
+    assert "Printer is on fire" not in json.dumps(fields)
+
+
 async def test_complete_wraps_sdk_errors() -> None:
     error = anthropic.APIConnectionError(
         request=httpx2.Request("POST", "https://api.anthropic.com/v1/messages")

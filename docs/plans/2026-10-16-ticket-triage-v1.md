@@ -27,7 +27,7 @@ Status: done 2026-10-16 except the DB-backed checks, which wait for Docker Deskt
 Deferred by choice: Phase 0.5 (GitHub, CI) until later; work stays on `main` for now.
 
 ## Phase 1: `core/llm` (the single gateway for LLM calls)
-Status: gateway done 2026-10-16 (routing, cost, budget, refusals, logs, 11 tests with fakes). Still open: `llm_calls` table, Langfuse tracing, first real call.
+Status: gateway done 2026-10-16 (routing, cost, budget, refusals, logs, 11 tests with fakes). First real Haiku call passed. Still open: `llm_calls` table, Langfuse tracing.
 - Model routing (`worker` → Haiku 5.5, `orchestrator` → Sonnet 5.5), explicit effort per call.
 - Retries, timeouts, `stop_reason: "refusal"` handling.
 - Cost: price table + per-call usage (tokens in/out, cache read/write, $, latency) → `llm_calls` table.

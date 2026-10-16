@@ -66,7 +66,14 @@ class LLMClient:
         except anthropic.APIError as exc:
             logger.exception(
                 "llm.error",
-                extra=log_fields(run_id=budget.run_id, model=model, error=type(exc).__name__),
+                extra=log_fields(
+                    run_id=budget.run_id,
+                    model=model,
+                    error=type(exc).__name__,
+                    status=getattr(exc, "status_code", None),
+                    request_id=getattr(exc, "request_id", None),
+                    detail=exc.message[:300],  # API's own description; never our prompt
+                ),
             )
             raise LLMError(f"{model} call failed: {type(exc).__name__}") from exc
 
