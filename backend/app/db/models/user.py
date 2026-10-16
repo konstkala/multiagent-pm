@@ -80,3 +80,29 @@ class RateLimitBucket(Base):
     key: Mapped[str] = mapped_column(String(200), primary_key=True)
     window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
     count: Mapped[int] = mapped_column(Integer)
+
+
+class OAuthIdentity(Base):
+    """An external account (e.g. Google) linked to a user. Keyed by the provider's stable id,
+    not the email, which can change on the provider's side."""
+
+    __tablename__ = "oauth_identities"
+
+    provider: Mapped[str] = mapped_column(String(20), primary_key=True)
+    subject: Mapped[str] = mapped_column(String(255), primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class OAuthState(Base):
+    """One sign-in attempt with an external provider: lives ten minutes, used once."""
+
+    __tablename__ = "oauth_states"
+
+    state_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    code_verifier: Mapped[str] = mapped_column(String(128))  # PKCE secret, never leaves the server
+    nonce: Mapped[str] = mapped_column(String(128))  # must come back inside the ID token
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

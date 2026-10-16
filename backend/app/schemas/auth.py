@@ -44,3 +44,7 @@ class UserRead(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class ProvidersResponse(BaseModel):
+    google: bool

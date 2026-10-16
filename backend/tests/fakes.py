@@ -5,6 +5,7 @@ from collections.abc import Sequence
 
 from app.db.models.ticket import EMBEDDING_DIM
 from app.services.email import EmailMessage
+from app.services.google import GoogleIdentity, GoogleSignInError
 
 
 class FakeEmbedder:
@@ -29,6 +30,29 @@ class BrokenEmbedder:
 
     async def embed(self, texts: Sequence[str]) -> list[list[float]]:
         raise RuntimeError("model unavailable")
+
+
+class FakeGoogle:
+    """Stands in for Google: hands back whatever identity the test sets."""
+
+    def __init__(self) -> None:
+        self.identity = GoogleIdentity(
+            subject="google-sub-1", email="ada@example.com", email_verified=True, name="Ada L"
+        )
+        self.last_state: str | None = None
+        self.last_nonce: str | None = None
+        self.fail = False
+
+    def authorization_url(self, *, state: str, nonce: str, code_challenge: str) -> str:
+        self.last_state, self.last_nonce = state, nonce
+        return f"https://accounts.example/auth?state={state}&challenge={code_challenge}"
+
+    async def identity_from_code(
+        self, *, code: str, code_verifier: str, nonce: str
+    ) -> GoogleIdentity:
+        if self.fail or nonce != self.last_nonce:
+            raise GoogleSignInError("rejected")
+        return self.identity
 
 
 class Outbox:

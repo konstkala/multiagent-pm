@@ -16,6 +16,12 @@ class Settings(BaseSettings):
 
     # Links in emails point at the frontend.
     app_base_url: str = "http://localhost:3000"
+    # The API as the browser sees it: the frontend proxies /api to this backend, so cookies
+    # stay first-party. Google's redirect URI is built from it.
+    public_api_url: str = "http://localhost:3000/api"
+    # Google sign-in stays off until both are set (Google Cloud Console → OAuth client).
+    google_client_id: str | None = None
+    google_client_secret: SecretStr | None = None
     cors_origins: list[str] = ["http://localhost:3000"]
     # Browsers accept Secure cookies on http://localhost, so this stays on in development too.
     cookie_secure: bool = True

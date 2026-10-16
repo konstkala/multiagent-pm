@@ -113,7 +113,7 @@ async def sign_in(session: AsyncSession, *, email: str, password: str, ip: str) 
     assert user.password_hash is not None  # password_ok is False without one
     if needs_rehash(user.password_hash):
         user.password_hash = await hash_password(password)
-    token = await _create_session(session, user)
+    token = await create_session(session, user)
     await session.commit()
     logger.info("audit.auth.signed_in", extra=log_fields(user_id=user.id))
     return user, token
@@ -194,7 +194,7 @@ async def _user_by_email(session: AsyncSession, email: str) -> User | None:
     return await session.scalar(select(User).where(User.email == email))
 
 
-async def _create_session(session: AsyncSession, user: User) -> str:
+async def create_session(session: AsyncSession, user: User) -> str:
     token = new_token()
     session.add(
         UserSession(

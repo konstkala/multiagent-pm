@@ -8,11 +8,13 @@ from app.db.models import User
 from app.db.session import get_session
 from app.services import auth
 from app.services.email import EmailSender, get_email_sender
+from app.services.google import GoogleClient, get_google_client
 
 SESSION_COOKIE = "pm_session"
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 MailerDep = Annotated[EmailSender, Depends(get_email_sender)]
+GoogleDep = Annotated[GoogleClient | None, Depends(get_google_client)]
 
 
 def client_ip(request: Request) -> str:
