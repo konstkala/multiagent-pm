@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** Backend foundation, tickets, embeddings and email/password auth are done. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
+> **Status: early development.** Milestone 1 is done: sign-up, sign-in (email or Google), workspaces, projects, roles, and the web app shell. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -21,7 +21,7 @@ It is also a learning project, built the way a production system would be: conta
 | Quality | pytest, ruff, pyright (strict) | Tests, lint, and static types |
 | Auth | Self-hosted: argon2id passwords, opaque session cookies stored hashed, email verification and reset via SMTP (Mailpit locally); Google sign-in next | Security engineering without a vendor |
 | Observability | Structured JSON logs with request IDs (done); Langfuse tracing (planned) | Trace a request and see tokens and cost per run |
-| Frontend | Next.js + TypeScript (planned) | Streaming progress and approval screens |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4, TanStack Query; typed client generated from the OpenAPI schema | Typed end to end; `/api` proxied so the session cookie stays first-party |
 | Cloud / CI / IaC | GitHub Actions, Terraform, Kubernetes (planned) | See the roadmap |
 
 Each choice is recorded with its reasoning in [docs/adr/](docs/adr/).
@@ -106,10 +106,10 @@ uv run alembic upgrade head              # apply migrations
 uv run fastapi dev app/main.py           # API docs at http://localhost:8000/docs
 ```
 
-Or run everything in containers (database, migration job, API):
+Or run everything in containers (database, migration job, API, web app, fake inbox):
 
 ```sh
-docker compose up -d --build             # API at http://localhost:8000/docs
+docker compose up -d --build             # app http://localhost:3000 · API docs http://localhost:8000/docs · inbox http://localhost:8025
 docker compose down                      # stop; data is kept in a volume
 ```
 
@@ -143,6 +143,7 @@ docs/
 |---|---|---|
 | 0 | Backend foundation: API, config, JSON logging, Postgres + pgvector, migrations, tests | Done |
 | 1 | `core/llm`: model routing, retries, cost logging, per-run budget | Built; tracing and call history table next |
+| M1 | Auth (email + Google), workspaces, projects, roles, Next.js app shell | Done |
 | 2 | Tickets domain, API and backend Dockerfile | Done |
 | 3 | Local embeddings and similar-ticket search | Done |
 | 4 | Triage workflow with LangGraph, background worker, approval pause | Next |

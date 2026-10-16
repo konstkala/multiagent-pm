@@ -6,6 +6,11 @@ x-backend: &backend
     # Inside the compose network services are reached by name, not localhost.
     DATABASE_URL: postgresql+asyncpg://pm:pm@db:5432/pm
     SMTP_HOST: mailpit
+    # Trust X-Forwarded-For from any address. Fine here: the only callers are our own proxy and
+    # this machine. In production, list only the proxy's address and don't publish the API port.
+    FORWARDED_ALLOW_IPS: "*"
+    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
 
 services:
   db:
@@ -46,6 +51,19 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+
+  # The app people use: http://localhost:3000. It proxies /api to the api service.
+  web:
+    image: pm-web:dev
+    build:
+      context: ./frontend
+      args:
+        API_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   pgdata:

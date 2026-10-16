@@ -14,7 +14,7 @@ Also a learning project: it should make me an expert **DevOps engineer** and **A
   - `claude-sonnet-5-5`: orchestrator, planning, agentic tool loops
 - **Embeddings**: fastembed `BAAI/bge-small-en-v1.5`, run locally on CPU
 - **Observability**: Langfuse (traces, tokens, cost per run)
-- **Frontend**: Next.js + TypeScript. API client generated from FastAPI's OpenAPI schema
+- **Frontend**: Next.js 16 + React 19 + TypeScript, Tailwind CSS 4, TanStack Query. API client generated from FastAPI's OpenAPI schema; `/api` proxied to FastAPI
 
 ## Layout (planned)
 ```
@@ -38,7 +38,8 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Migrate: `uv run alembic upgrade head` · new: `uv run alembic revision --autogenerate -m "<msg>"`
 - Dev server: `uv run fastapi dev app/main.py` → http://localhost:8000/docs
 - Fake inbox (Mailpit, part of the compose stack): http://localhost:8025
-- Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api on :8000). Stop a local dev server first: same port
+- Frontend (from `frontend/`): `npm run dev` (http://localhost:3000) · `npm run check` (lint + types + build) · `npm run gen:api` after API changes
+- Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api :8000 → web :3000). Stop local dev servers first: same ports
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
 - Real embedding model test (free, downloads the model once): `uv run pytest -m model`
 - Test one: `uv run pytest tests/test_health.py::test_health_returns_ok`

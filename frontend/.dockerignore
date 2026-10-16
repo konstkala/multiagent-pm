@@ -1,0 +1,7 @@
+# Keep the build context small; dependencies and builds are recreated inside the image.
+node_modules/
+.next/
+.env*
+Dockerfile
+.dockerignore
+README.md

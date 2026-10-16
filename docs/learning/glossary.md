@@ -57,6 +57,23 @@ A few words each. New technologies are added as they appear.
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |
 | **ADR** | Architecture Decision Record | One file per decision: context, choice, consequences |
 
+### Frontend and sign-in
+
+| Tech | What it is | Why we use it |
+|---|---|---|
+| **React** | A library for building UI from components | Every screen is React components |
+| **Next.js** | A framework on top of React: routing, server rendering, proxy, production server | Pages from folders, `/api` proxy, a self-contained server for Docker |
+| **Server vs client components** | Server: rendered on the server, no browser JS. Client (`"use client"`): interactive | Static shells are fast; forms and signed-in data are client components |
+| **Tailwind CSS** | Utility classes in the markup | Fast, consistent styling without separate CSS files |
+| **TanStack Query** | Library for server data in React: caching, loading/error state, refetch | No hand-written loading logic; mutations refresh exactly what they change |
+| **OpenAPI codegen** | Types and client generated from the API schema | Frontend and backend can't silently disagree on request/response shapes |
+| **Reverse proxy** | A server that forwards requests to another server | `/api` on the frontend reaches FastAPI; one origin for the browser |
+| **X-Forwarded-For** | Header a proxy adds with the original client address | Rate limits see the real user, not the proxy; trust it only from your proxy |
+| **OAuth 2.0 / OpenID Connect** | Standards for "sign in with Google" | Google proves who the user is; we never see their Google password |
+| **ID token (JWT)** | A signed token from Google stating who signed in | We check signature, issuer, audience, expiry and nonce before trusting it |
+| **PKCE** | A one-time secret proving the code exchange comes from whoever started sign-in | A stolen authorization code is useless on its own |
+| **state / nonce** | Random values tying Google's answer to this browser and this attempt | Stops login CSRF and token replay |
+
 ## Planned (not used yet)
 
 | Tech | What it is | Why we'll use it |
@@ -65,6 +82,5 @@ A few words each. New technologies are added as they appear.
 | **PydanticAI** | Typed LLM agents | Structured, validated LLM outputs |
 | **Claude API** | Anthropic's LLM API | Haiku for workers, Sonnet for planning |
 | **Langfuse** | LLM observability | Traces, tokens, $ per run |
-| **Next.js** | React framework | Frontend with server + client components |
 | **GitHub Actions** | CI/CD service | Run checks on every push and PR |
 | **Terraform** | Infrastructure as Code | Cloud resources defined in files, reviewed like code |

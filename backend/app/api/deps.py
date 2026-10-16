@@ -18,7 +18,8 @@ GoogleDep = Annotated[GoogleClient | None, Depends(get_google_client)]
 
 
 def client_ip(request: Request) -> str:
-    # Behind a proxy this needs the proxy's forwarded header (uvicorn --proxy-headers).
+    # Behind the frontend proxy, uvicorn --proxy-headers has already replaced this with the
+    # X-Forwarded-For address, provided the proxy is in FORWARDED_ALLOW_IPS.
     return request.client.host if request.client else "unknown"
 
 

@@ -21,7 +21,8 @@ Phases refer to [the triage v1 plan](../plans/2026-10-16-ticket-triage-v1.md).
 | [ ] | SLOs | p95 ≤ 10s interactive, error-rate targets, alerts on burn rate | Phase 7 |
 | [ ] | Reliability | Graceful shutdown, retries with backoff, load tests (k6), backup + restore drill | Phase 7 |
 | [ ] | Security | Dependabot, SAST, least-privilege credentials, HTTPS, OWASP Top 10 | Ongoing |
-| [ ] | Authentication | Password hashing, sessions, CSRF/CORS, rate limits, email tokens (done); Google OIDC next | Milestone 1 |
+| [x] | Authentication | Password hashing, sessions, CSRF/CORS, rate limits, email tokens, Google OIDC with PKCE | Milestone 1 |
+| [ ] | Reverse proxies | Next.js proxies /api; X-Forwarded-For and trusted proxies (dev done; production edge proxy later) | Milestone 1, 7 |
 | [ ] | Cost (FinOps) | Cloud cost next to LLM cost; budgets and alerts | Phase 7 |
 | [ ] | Kubernetes | [Track](containers-kubernetes.md) modules 10–12: kind, Deployments, probes, Helm, rollouts, GitOps | Phase 8 |
 
