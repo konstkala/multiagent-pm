@@ -2,12 +2,13 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import APIKeyHeader
 
 from app.api import auth, health, tickets, workspaces
 from app.api.errors import register_error_handlers
-from app.api.middleware import log_requests, require_csrf_header
+from app.api.middleware import CSRF_HEADER, log_requests, require_csrf_header
 from app.core.config import settings
 from app.core.logging import configure_logging
 from app.db.session import engine
@@ -24,7 +25,14 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     logger.info("app.shutdown")
 
 
-app = FastAPI(title="Multiagent PM", lifespan=lifespan)
+# Documents the CSRF header so /docs gets an "Authorize" box for it. The check is the middleware.
+_csrf_header_in_docs = APIKeyHeader(
+    name=CSRF_HEADER, auto_error=False, description="Any value, e.g. fetch"
+)
+
+app = FastAPI(
+    title="Multiagent PM", lifespan=lifespan, dependencies=[Depends(_csrf_header_in_docs)]
+)
 # The last one added runs first: CORS answers preflights, then requests are logged, then checked.
 app.middleware("http")(require_csrf_header)
 app.middleware("http")(log_requests)
