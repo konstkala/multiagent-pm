@@ -3,15 +3,15 @@ import { Suspense } from "react";
 
 import { Loading } from "@/components/ui";
 
-import { ProjectView } from "./project-view";
+import { TicketsList } from "./tickets-list";
 
-export const metadata: Metadata = { title: "Project" };
+export const metadata: Metadata = { title: "Tickets" };
 
-export default function ProjectPage() {
-  // The project id comes from the URL, so the view renders in the browser.
+export default function ProjectTicketsPage() {
+  // Filters come from the URL, so the list renders in the browser.
   return (
     <Suspense fallback={<Loading />}>
-      <ProjectView />
+      <TicketsList />
     </Suspense>
   );
 }

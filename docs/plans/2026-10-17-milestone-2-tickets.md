@@ -38,8 +38,10 @@ Enforced in the service layer; outsiders still get 404.
 ## Steps (commit after each)
 - 2a Schema + ticket API (statuses, fields, permissions, sub-tasks, links, copy, return, filters, comments). **Done** (migration 0007 converts old data; 16 new tests)
 - 2b Attachments. **Done**: SeaweedFS replaces MinIO, whose images are gone (ADR 0015); 13 new tests
-- 2c List and detail pages
-- 2d Board with drag and drop
+- 2c List and detail pages. **Done**
+- 2d Board with drag and drop. **Done**
+
+Verified 2026-10-17: 22-step end-to-end run through the web proxy with a manager and an employee (workflow, permissions, sub-tasks, links, comments, copy, return, filters, 9.5 MB upload byte-identical, oversized and HTML files refused, all pages load).
 
 ## Not in this milestone
 Activity history per ticket (audit logs exist; a visible history comes later), notifications, presigned direct uploads (an optimisation for large files).

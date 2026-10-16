@@ -74,6 +74,19 @@ A few words each. New technologies are added as they appear.
 | **PKCE** | A one-time secret proving the code exchange comes from whoever started sign-in | A stolen authorization code is useless on its own |
 | **state / nonce** | Random values tying Google's answer to this browser and this attempt | Stops login CSRF and token replay |
 
+### Tickets and files
+
+| Tech | What it is | Why we use it |
+|---|---|---|
+| **Object storage (S3 API)** | Files stored as objects in buckets, reached over HTTP | Files don't bloat the database; the S3 API is the standard every cloud speaks |
+| **SeaweedFS** | An open-source server that speaks the S3 API | Local stand-in for S3 after MinIO stopped publishing images |
+| **boto3** | AWS's Python SDK | Talks to S3, R2 or SeaweedFS with the same code |
+| **Content sniffing / magic bytes** | Recognising a file by its first bytes, not its name | A file named `.png` that is really HTML is refused |
+| **CSP `sandbox`** | A header telling the browser to run nothing from this response | Even if someone opens a downloaded file in the browser, its scripts can't run |
+| **Optimistic update** | Show the change first, confirm with the server after | The board feels instant; a refused move jumps back with the reason |
+| **dnd-kit** | Accessible drag-and-drop for React | Board cards move by mouse, touch or keyboard |
+| **URL as state** | Filters stored in the address bar | A filtered view can be bookmarked or shared, and Back works |
+
 ## Planned (not used yet)
 
 | Tech | What it is | Why we'll use it |

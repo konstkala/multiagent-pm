@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** Milestone 1 is done: sign-up, sign-in (email or Google), workspaces, projects, roles, and the web app shell. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
+> **Status: early development.** Milestones 1 and 2 are done: accounts (email or Google), workspaces, projects and roles, and a Jira-style ticket experience (list, board, detail, comments, attachments). The AI agents come next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -18,6 +18,7 @@ It is also a learning project, built the way a production system would be: conta
 | Embeddings | fastembed (bge-small, ONNX, CPU) + pgvector HNSW | Free, local similar-ticket search; no extra API key |
 | Dependencies | uv with a lockfile | Reproducible installs |
 | Containers | Docker, Docker Compose | Same local database for everyone |
+| Files | S3 API via boto3; SeaweedFS locally, S3/R2 in production | Attachments outside the database; storage product swappable by config |
 | Quality | pytest, ruff, pyright (strict) | Tests, lint, and static types |
 | Auth | Self-hosted: argon2id passwords, opaque session cookies stored hashed, email verification and reset via SMTP (Mailpit locally); Google sign-in next | Security engineering without a vendor |
 | Observability | Structured JSON logs with request IDs (done); Langfuse tracing (planned) | Trace a request and see tokens and cost per run |
@@ -59,9 +60,13 @@ Ticket triage workflow (planned; embedding and similar-ticket search already wor
 | GET, POST | `/projects/{id}/members` | List members; managers add a verified user by email as manager or employee |
 | PATCH, DELETE | `/projects/{id}/members/{user_id}` | Change role or remove; a project always keeps one manager |
 | POST | `/projects/{id}/tickets` | Create a ticket (numbered per project: PM-1, PM-2, ...) |
-| GET | `/projects/{id}/tickets?limit=20&offset=0` | List, newest first, paginated |
+| GET | `/projects/{id}/tickets` | List with filters: `status` (repeatable), `assignee_id`, `unassigned`, `category`, `label`, `parent_id`, `q`; paginated |
 | GET | `/tickets/{id}` | Read one |
-| PATCH | `/tickets/{id}` | Change only the fields sent (null clears optional ones) |
+| PATCH | `/tickets/{id}` | Change fields (managers) or move status (assignee); null clears optional ones |
+| POST | `/tickets/{id}/copy`, `/tickets/{id}/return` | Copy as a template (managers); return to the manager with a reason (assignee) |
+| GET, POST | `/tickets/{id}/comments` · PATCH, DELETE `/comments/{id}` | Comments; authors edit their own, managers can delete any |
+| GET, POST | `/tickets/{id}/links` · DELETE `/links/{id}` | "blocks" and "relates to", shown on both tickets |
+| GET, POST | `/tickets/{id}/attachments` · GET `/attachments/{id}/download` · DELETE | Files up to 10 MB, type checked from content, served sandboxed |
 | GET | `/tickets/{id}/similar` | Most similar tickets in the same project (`limit`, `min_similarity`) |
 | POST | `/auth/sign-up`, `/auth/verify-email`, `/auth/resend-verification` | Create an account and confirm the email |
 | POST | `/auth/sign-in`, `/auth/sign-out` · GET `/auth/me` | Session cookie sign-in |
@@ -145,6 +150,7 @@ docs/
 | 1 | `core/llm`: model routing, retries, cost logging, per-run budget | Built; tracing and call history table next |
 | M1 | Auth (email + Google), workspaces, projects, roles, Next.js app shell | Done |
 | 2 | Tickets domain, API and backend Dockerfile | Done |
+| M2 | Ticket workflow, sub-tasks, links, comments, attachments; list, board and detail screens | Done |
 | 3 | Local embeddings and similar-ticket search | Done |
 | 4 | Triage workflow with LangGraph, background worker, approval pause | Next |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |

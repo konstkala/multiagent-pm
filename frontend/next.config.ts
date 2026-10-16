@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   output: "standalone", // a self-contained server for the Docker image
   poweredByHeader: false,
+  experimental: {
+    // The proxy's default 10 MB cut-off would break uploads just over 10 MB with a bare 500.
+    // Slightly above the API's own 10 MB limit, so the API decides and answers with a clear 413.
+    proxyClientMaxBodySize: "12mb",
+  },
   turbopack: {
     rules: {
       "*.css": {
