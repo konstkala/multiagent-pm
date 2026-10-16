@@ -42,6 +42,7 @@ Status: table, migration 0002, CRUD API, audit logs, 15 DB tests done 2026-10-16
 - Backend Dockerfile (multi-stage, non-root, HEALTHCHECK); Trivy scan in CI.
 
 ## Phase 3: Embeddings + similar tickets
+Status: done 2026-10-16 (migration 0003, FastEmbedder, `/tickets/{id}/similar`, 9 tests + real-model test, model baked into the image). Embedding still runs inline in the API; Phase 4 moves it to the worker.
 - Local embeddings (fastembed), stored in a vector column with an HNSW index.
 - `find_similar(ticket, k)` service. Cost: $0 per call. Measure CPU latency.
 - ADR 0007: local embeddings.

@@ -35,6 +35,11 @@ A few words each. New technologies are added as they appear.
 | **Non-root user** | The container process isn't `root` | If the app is compromised, the attacker has fewer rights |
 | **.dockerignore** | Files excluded from the build | Keeps `.env`, `.venv` and tests out of the image |
 | **Migration job** | A one-off container that runs migrations and exits | Schema is updated before the new API starts; same idea as a Kubernetes Job |
+| **Embedding** | A list of numbers that represents the meaning of a text | Similar meaning gives nearby vectors, so we can find duplicate tickets by distance |
+| **fastembed + ONNX** | Small library + model format that runs an embedding model on the CPU | Free and local; no API key; ~16 ms for a few short texts |
+| **Cosine similarity** | How closely two vectors point the same way (1 = same meaning) | The metric bge models are trained for; our `min_similarity` cut-off uses it |
+| **HNSW index** | Graph index for approximate nearest-neighbour search | Keeps similar-ticket queries fast as tickets grow, at a small recall cost |
+| **Dependency injection (FastAPI `Depends`)** | The framework passes in what a function needs | Tests swap the real embedder for a fake without touching the code |
 | **JSON logging** | One JSON object per log line | Log tools can search and filter by field (`request_id`, `status`) |
 | **Request ID** | Unique id per HTTP request | Follow one request through all logs |
 | **Liveness / readiness** | Two kinds of health check | Liveness: restart if dead. Readiness: send traffic only when the DB is ready |
@@ -48,7 +53,6 @@ A few words each. New technologies are added as they appear.
 | **PydanticAI** | Typed LLM agents | Structured, validated LLM outputs |
 | **Claude API** | Anthropic's LLM API | Haiku for workers, Sonnet for planning |
 | **Langfuse** | LLM observability | Traces, tokens, $ per run |
-| **fastembed** | Local embedding model | Turns tickets into vectors for free |
 | **Next.js** | React framework | Frontend with server + client components |
 | **GitHub Actions** | CI/CD service | Run checks on every push and PR |
 | **Terraform** | Infrastructure as Code | Cloud resources defined in files, reviewed like code |

@@ -31,7 +31,7 @@ Phases refer to [the triage v1 plan](../plans/2026-10-16-ticket-triage-v1.md).
 | [ ] | LLM API fundamentals | Tokens, context, pricing, effort, thinking, streaming, stop reasons | Phase 1 |
 | [x] | LLM gateway | `core/llm`: routing, retries, refusals, cost logging, budget guard (first real call passed 2026-10-16) | Phase 1 |
 | [ ] | LLM observability | Langfuse traces: tokens, $ and latency per run | Phase 1 |
-| [ ] | Embeddings + retrieval | Local embeddings, pgvector HNSW, similarity thresholds | Phase 3 |
+| [x] | Embeddings + retrieval | Local embeddings, pgvector HNSW, similarity thresholds | Phase 3 |
 | [ ] | Structured output | PydanticAI typed outputs, validation, retries on bad output | Phase 4 |
 | [ ] | Prompt engineering + caching | Prompt files, stable prefix first, cache hit rate | Phase 4 |
 | [ ] | Workflows vs agents | LangGraph state, nodes, checkpoints; why triage is a workflow | Phase 4 |

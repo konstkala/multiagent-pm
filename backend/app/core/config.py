@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://pm:pm@localhost:5432/pm"
     log_level: str = "INFO"
     anthropic_api_key: SecretStr | None = None
+    # Must produce EMBEDDING_DIM numbers; changing it means re-embedding every ticket.
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_cache_dir: Path | None = None
 
 
 settings = Settings()

@@ -15,6 +15,7 @@ It is also a learning project, built the way a production system would be: conta
 | LLM | Claude API: Haiku 5.5 for workers, Sonnet 5.5 for orchestration | Cheap model for routine calls; routing in one place |
 | Database | PostgreSQL 17 + pgvector | One database for data, vector search, agent checkpoints and the job queue |
 | ORM / migrations | SQLAlchemy 2 (async), Alembic, asyncpg | Typed models, versioned schema changes |
+| Embeddings | fastembed (bge-small, ONNX, CPU) + pgvector HNSW | Free, local similar-ticket search; no extra API key |
 | Dependencies | uv with a lockfile | Reproducible installs |
 | Containers | Docker, Docker Compose | Same local database for everyone |
 | Quality | pytest, ruff, pyright (strict) | Tests, lint, and static types |
@@ -43,7 +44,7 @@ Client ──► FastAPI ──► services ──► PostgreSQL + pgvector
         job queue ──► worker ──► LangGraph workflow ──► core/llm ──► Claude API
 ```
 
-Ticket triage workflow (planned): embed the ticket → find similar tickets → one Haiku call returns type, priority, labels, duplicate and suggested assignee with a confidence → apply labels → pause for human approval of assignee and priority → apply. Estimated cost: about $0.001–0.002 per ticket. Details: [docs/plans/](docs/plans/2026-10-16-ticket-triage-v1.md).
+Ticket triage workflow (planned; embedding and similar-ticket search already work): embed the ticket → find similar tickets → one Haiku call returns type, priority, labels, duplicate and suggested assignee with a confidence → apply labels → pause for human approval of assignee and priority → apply. Estimated cost: about $0.001–0.002 per ticket. Details: [docs/plans/](docs/plans/2026-10-16-ticket-triage-v1.md).
 
 ## API
 
@@ -53,6 +54,7 @@ Ticket triage workflow (planned): embed the ticket → find similar tickets → 
 | GET | `/tickets?limit=20&offset=0` | List, newest first, paginated |
 | GET | `/tickets/{id}` | Read one |
 | PATCH | `/tickets/{id}` | Change only the fields sent (null clears optional ones) |
+| GET | `/tickets/{id}/similar` | Most similar tickets by meaning (`limit`, `min_similarity`) |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
 Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
@@ -61,9 +63,10 @@ Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interact
 
 PostgreSQL 17 with the **pgvector** extension, run locally in Docker (`pgvector/pgvector:pg17`). Data is kept in a Docker volume, so it survives container restarts.
 
-- **Migrations:** `0001` enables pgvector, `0002` creates `tickets`.
+- **Migrations:** `0001` enables pgvector, `0002` creates `tickets`, `0003` adds embeddings.
 - **`tickets`:** UUID keys, text columns with CHECK constraints for status/type/priority, labels array, self-referencing `duplicate_of`, timestamps. Triage fields are empty until triage runs.
-- **Planned:** an embedding column for similar-ticket search, LLM call records for cost tracking, and the job queue. LangGraph adds its own checkpoint tables.
+- **Embeddings:** migration `0003` adds a `vector(384)` column, the model name, and an HNSW cosine index.
+- **Planned:** LLM call records for cost tracking and the job queue. LangGraph adds its own checkpoint tables.
 - **Connection (local only):** host `localhost`, port `5432`, database `pm`, user `pm`, password `pm`. These are throwaway development credentials.
 
 Query it with `psql` inside the container:
@@ -130,8 +133,8 @@ docs/
 | 0 | Backend foundation: API, config, JSON logging, Postgres + pgvector, migrations, tests | Done |
 | 1 | `core/llm`: model routing, retries, cost logging, per-run budget | Built; tracing and call history table next |
 | 2 | Tickets domain, API and backend Dockerfile | Done |
-| 3 | Local embeddings and similar-ticket search | Next |
-| 4 | Triage workflow with LangGraph, background worker, approval pause | Planned |
+| 3 | Local embeddings and similar-ticket search | Done |
+| 4 | Triage workflow with LangGraph, background worker, approval pause | Next |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |
 | 6 | Next.js frontend | Planned |
 | 7 | CI/CD, cloud deployment with Terraform, tracing and alerts | Planned |

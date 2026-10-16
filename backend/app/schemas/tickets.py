@@ -53,6 +53,15 @@ class TicketRead(BaseModel):
     updated_at: datetime
 
 
+class SimilarTicket(BaseModel):
+    ticket: TicketRead
+    similarity: float = Field(description="Cosine similarity, 1.0 means identical meaning")
+
+
+class SimilarTickets(BaseModel):
+    items: list[SimilarTicket]
+
+
 class TicketPage(BaseModel):
     items: list[TicketRead]
     total: int

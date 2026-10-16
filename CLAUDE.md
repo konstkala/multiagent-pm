@@ -11,6 +11,7 @@ Also a learning project: it should make me an expert **DevOps engineer** and **A
 - **LLM**: Claude API
   - `claude-haiku-5-5`: workers (classify, summarize, extract)
   - `claude-sonnet-5-5`: orchestrator, planning, agentic tool loops
+- **Embeddings**: fastembed `BAAI/bge-small-en-v1.5`, run locally on CPU
 - **Observability**: Langfuse (traces, tokens, cost per run)
 - **Frontend**: Next.js + TypeScript. API client generated from FastAPI's OpenAPI schema
 
@@ -37,6 +38,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Dev server: `uv run fastapi dev app/main.py` → http://localhost:8000/docs
 - Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api on :8000). Stop a local dev server first: same port
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
+- Real embedding model test (free, downloads the model once): `uv run pytest -m model`
 - Test one: `uv run pytest tests/test_health.py::test_health_returns_ok`
 - Tests use a throwaway `pm_test` database built from the migrations; each test is rolled back
 - Check (run before saying done): `uv run ruff check --fix . && uv run ruff format . && uv run pyright && uv run pytest`
@@ -64,6 +66,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 4. Model routing: Haiku workers, Sonnet orchestrator.
 5. Next.js + TS frontend: React ecosystem, typed client from OpenAPI, suits streaming agent output and approval UIs.
 6. SQLAlchemy 2 async + Alembic + asyncpg: typed ORM, versioned migrations, async driver that works on Windows.
+7. Local embeddings (fastembed, bge-small, 384 dims, cosine, HNSW): $0 per call, no extra API key. See ADR 0007.
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.

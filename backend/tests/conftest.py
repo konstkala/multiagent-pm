@@ -13,6 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engin
 from app.core.config import settings
 from app.db.session import get_session
 from app.main import app
+from app.services.embeddings import Embedder, get_embedder
+from tests.fakes import FakeEmbedder
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_DB = "pm_test"
@@ -60,9 +62,17 @@ async def db_session(test_engine: AsyncEngine) -> AsyncGenerator[AsyncSession]:
 
 
 @pytest.fixture
-async def db_client(client: AsyncClient, db_session: AsyncSession) -> AsyncClient:
+def embedder() -> Embedder:
+    return FakeEmbedder()
+
+
+@pytest.fixture
+async def db_client(
+    client: AsyncClient, db_session: AsyncSession, embedder: Embedder
+) -> AsyncClient:
     async def use_test_session() -> AsyncGenerator[AsyncSession]:
         yield db_session
 
     app.dependency_overrides[get_session] = use_test_session
+    app.dependency_overrides[get_embedder] = lambda: embedder
     return client

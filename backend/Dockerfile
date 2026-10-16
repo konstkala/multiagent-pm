@@ -11,17 +11,25 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-dev
 
+# Download the embedding model now, so containers never fetch it at runtime.
+# Keep the name in step with `embedding_model` in app/core/config.py.
+ARG EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+RUN /app/.venv/bin/python -c "from fastembed import TextEmbedding; TextEmbedding('${EMBEDDING_MODEL}', cache_dir='/models')"
+
 # Stage 2: the image we ship. No uv, no compilers, no dev tools.
 FROM python:3.12-slim AS runtime
 RUN useradd --system --uid 10001 --no-create-home app
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
+COPY --from=builder --chown=app:app /models /models
 COPY --chown=app:app alembic.ini ./
 COPY --chown=app:app app ./app
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    EMBEDDING_CACHE_DIR=/models \
+    HF_HUB_OFFLINE=1
 USER app
 EXPOSE 8000
 

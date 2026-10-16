@@ -14,6 +14,11 @@ class NotFoundError(DomainError):
     code = "not_found"
 
 
+class ConflictError(DomainError):
+    status_code = 409
+    code = "conflict"
+
+
 class InvalidRequestError(DomainError):
     status_code = 422
     code = "invalid_request"

@@ -2,10 +2,13 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import ARRAY, DateTime, Enum, ForeignKey, String, Text, func, text
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import ARRAY, DateTime, Enum, ForeignKey, Index, String, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+
+EMBEDDING_DIM = 384
 
 
 class TicketStatus(StrEnum):
@@ -40,6 +43,16 @@ def _text_enum(cls: type[StrEnum]) -> Enum:
 
 class Ticket(Base):
     __tablename__ = "tickets"
+    __table_args__ = (
+        # Cosine distance, the metric these models are trained for.
+        Index(
+            "ix_tickets_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_with={"m": 16, "ef_construction": 64},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True, server_default=text("gen_random_uuid()")
@@ -62,6 +75,11 @@ class Ticket(Base):
 
     # clock_timestamp(), not now(): now() is the transaction start, so rows created in one
     # transaction would tie and list in random order.
+    # Nullable: filled when embedding succeeds. The model name travels with the vector because
+    # vectors from different models are not comparable.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
+    embedding_model: Mapped[str | None] = mapped_column(String(100))
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.clock_timestamp(), index=True
     )
