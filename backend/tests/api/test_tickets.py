@@ -32,9 +32,11 @@ async def test_create_ticket_returns_defaults_and_reporter(
     assert ticket["project_id"] == project_id
     assert ticket["number"] == 1
     assert ticket["reporter_id"] == me["id"]
-    assert ticket["status"] == "open"
+    assert ticket["status"] == "todo"
     assert ticket["labels"] == []
-    assert ticket["type"] is None
+    assert ticket["category"] is None
+    assert ticket["assignee_id"] is None
+    assert ticket["story_points"] is None
 
 
 async def test_ticket_numbers_count_up_per_project(manager: AsyncClient, project_id: str) -> None:
@@ -103,30 +105,49 @@ async def test_list_tickets_rejects_oversized_limit(manager: AsyncClient, projec
     assert response.status_code == 422
 
 
-async def test_update_ticket_sets_triage_fields(manager: AsyncClient, project_id: str) -> None:
+async def test_manager_sets_all_planning_fields(manager: AsyncClient, project_id: str) -> None:
     created = await create(manager, project_id)
+    me = (await manager.get("/auth/me")).json()["id"]
 
     response = await manager.patch(
         f"/tickets/{created['id']}",
-        json={"type": "bug", "priority": "high", "labels": ["hardware"], "assignee": "sam"},
+        json={
+            "category": "bug",
+            "priority": "high",
+            "labels": [" Hardware ", "printer"],
+            "story_points": 5,
+            "due_date": "2026-11-30",
+            "assignee_id": me,
+        },
     )
 
     updated = response.json()
     assert response.status_code == 200
-    assert (updated["type"], updated["priority"], updated["assignee"]) == ("bug", "high", "sam")
-    assert updated["labels"] == ["hardware"]
+    assert (updated["category"], updated["priority"]) == ("bug", "high")
+    assert updated["labels"] == ["hardware", "printer"]  # trimmed and lowercased
+    assert (updated["story_points"], updated["due_date"]) == (5, "2026-11-30")
+    assert updated["assignee_id"] == me
     assert updated["updated_at"] >= created["updated_at"]
+
+
+async def test_story_points_must_be_fibonacci(manager: AsyncClient, project_id: str) -> None:
+    created = await create(manager, project_id)
+
+    response = await manager.patch(f"/tickets/{created['id']}", json={"story_points": 4})
+
+    assert response.status_code == 422
 
 
 async def test_update_ticket_can_clear_optional_field(
     manager: AsyncClient, project_id: str
 ) -> None:
     created = await create(manager, project_id)
-    await manager.patch(f"/tickets/{created['id']}", json={"assignee": "sam"})
+    me = (await manager.get("/auth/me")).json()["id"]
+    await manager.patch(f"/tickets/{created['id']}", json={"assignee_id": me})
 
-    response = await manager.patch(f"/tickets/{created['id']}", json={"assignee": None})
+    response = await manager.patch(f"/tickets/{created['id']}", json={"assignee_id": None})
 
-    assert response.json()["assignee"] is None
+    assert response.json()["assignee_id"] is None
 
 
 async def test_update_ticket_rejects_null_title_and_unknown_status(
@@ -141,7 +162,7 @@ async def test_update_ticket_rejects_null_title_and_unknown_status(
 
 
 async def test_update_unknown_ticket_returns_404(manager: AsyncClient) -> None:
-    response = await manager.patch(f"/tickets/{uuid.uuid4()}", json={"status": "closed"})
+    response = await manager.patch(f"/tickets/{uuid.uuid4()}", json={"status": "done"})
 
     assert response.status_code == 404
 

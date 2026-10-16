@@ -137,3 +137,14 @@ async def project_id(manager: AsyncClient) -> str:
     )
     assert project.status_code == 201
     return project.json()["id"]
+
+
+@pytest.fixture
+async def employee(manager: AsyncClient, project_id: str, login: Login) -> AsyncClient:
+    """`emp@example.com`, an employee in the `PM` project."""
+    browser = await login("emp")
+    added = await manager.post(
+        f"/projects/{project_id}/members", json={"email": "emp@example.com", "role": "employee"}
+    )
+    assert added.status_code == 201
+    return browser

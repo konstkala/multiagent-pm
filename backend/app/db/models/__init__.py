@@ -1,4 +1,14 @@
-from app.db.models.ticket import Ticket, TicketPriority, TicketStatus, TicketType
+from app.db.models.ticket import (
+    STORY_POINTS,
+    LinkType,
+    Ticket,
+    TicketAttachment,
+    TicketCategory,
+    TicketComment,
+    TicketLink,
+    TicketPriority,
+    TicketStatus,
+)
 from app.db.models.user import (
     EmailToken,
     EmailTokenPurpose,
@@ -18,8 +28,10 @@ from app.db.models.workspace import (
 )
 
 __all__ = [
+    "STORY_POINTS",
     "EmailToken",
     "EmailTokenPurpose",
+    "LinkType",
     "OAuthIdentity",
     "OAuthState",
     "Project",
@@ -27,9 +39,12 @@ __all__ = [
     "ProjectRole",
     "RateLimitBucket",
     "Ticket",
+    "TicketAttachment",
+    "TicketCategory",
+    "TicketComment",
+    "TicketLink",
     "TicketPriority",
     "TicketStatus",
-    "TicketType",
     "User",
     "UserSession",
     "Workspace",

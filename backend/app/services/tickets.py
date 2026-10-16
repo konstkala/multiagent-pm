@@ -1,12 +1,22 @@
 import logging
 import uuid
+from dataclasses import dataclass
 
-from sqlalchemy import func, select, update
+from sqlalchemy import ColumnElement, and_, exists, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import ConflictError, InvalidRequestError, NotFoundError
+from app.core.errors import ConflictError, ForbiddenError, InvalidRequestError, NotFoundError
 from app.core.logging import log_fields
-from app.db.models import Project, Ticket, User
+from app.db.models import (
+    Project,
+    ProjectMember,
+    ProjectRole,
+    Ticket,
+    TicketCategory,
+    TicketComment,
+    TicketStatus,
+    User,
+)
 from app.schemas.tickets import TicketCreate, TicketUpdate
 from app.services import access
 from app.services.embeddings import Embedder
@@ -15,6 +25,20 @@ logger = logging.getLogger(__name__)
 
 # Audit logs record that these changed, never their content (it is user text).
 _TEXT_FIELDS = frozenset({"title", "description"})
+_CLOSED = frozenset({TicketStatus.DONE, TicketStatus.CANCELLED})
+# What an employee may change, and only on tickets assigned to them.
+_EMPLOYEE_FIELDS = frozenset({"status"})
+
+
+@dataclass(frozen=True)
+class TicketFilters:
+    statuses: list[TicketStatus] | None = None
+    assignee_id: uuid.UUID | None = None
+    unassigned: bool = False
+    category: TicketCategory | None = None
+    label: str | None = None
+    parent_id: uuid.UUID | None = None
+    search: str | None = None
 
 
 async def create_ticket(
@@ -24,13 +48,16 @@ async def create_ticket(
     actor: User,
     embedder: Embedder,
 ) -> Ticket:
-    await access.project_role(session, project_id, actor)
+    await access.require_manager(session, project_id, actor)
+    if data.assignee_id is not None:
+        await _check_assignee(session, project_id, data.assignee_id)
+    if data.parent_id is not None:
+        await _check_parent(session, project_id, None, data.parent_id)
     ticket = Ticket(
         project_id=project_id,
         number=await _next_number(session, project_id),
         reporter_id=actor.id,
-        title=data.title,
-        description=data.description,
+        **data.model_dump(),
     )
     await _set_embedding(ticket, embedder)
     session.add(ticket)
@@ -41,6 +68,32 @@ async def create_ticket(
         extra=log_fields(
             actor=actor.id, project_id=project_id, ticket_id=ticket.id, title_len=len(ticket.title)
         ),
+    )
+    return ticket
+
+
+async def copy_ticket(
+    session: AsyncSession, ticket_id: uuid.UUID, actor: User, embedder: Embedder
+) -> Ticket:
+    """A manager reuses a ticket as a template: content and sizing, not the work state."""
+    source = await get_ticket(session, ticket_id, actor)
+    await access.require_manager(session, source.project_id, actor)
+    # Validating rebuilds typed values (e.g. story points) from what the database holds.
+    copy = TicketCreate.model_validate(
+        {
+            "title": f"Copy of {source.title}"[:200],
+            "description": source.description,
+            "category": source.category,
+            "priority": source.priority,
+            "labels": source.labels,
+            "story_points": source.story_points,
+            "parent_id": source.parent_id,
+        }
+    )
+    ticket = await create_ticket(session, source.project_id, copy, actor, embedder)
+    logger.info(
+        "audit.ticket.copied",
+        extra=log_fields(actor=actor.id, source_id=source.id, ticket_id=ticket.id),
     )
     return ticket
 
@@ -58,14 +111,19 @@ async def get_ticket(session: AsyncSession, ticket_id: uuid.UUID, user: User) ->
 
 
 async def list_tickets(
-    session: AsyncSession, project_id: uuid.UUID, user: User, limit: int, offset: int
+    session: AsyncSession,
+    project_id: uuid.UUID,
+    user: User,
+    filters: TicketFilters,
+    limit: int,
+    offset: int,
 ) -> tuple[list[Ticket], int]:
     await access.project_role(session, project_id, user)
-    in_project = Ticket.project_id == project_id
+    conditions = [Ticket.project_id == project_id, *_filter_conditions(filters)]
     # id breaks ties so pages never repeat or skip rows with equal timestamps.
-    query = select(Ticket).where(in_project).order_by(Ticket.created_at.desc(), Ticket.id.desc())
+    query = select(Ticket).where(*conditions).order_by(Ticket.created_at.desc(), Ticket.id.desc())
     rows = await session.scalars(query.limit(limit).offset(offset))
-    total = await session.scalar(select(func.count()).select_from(Ticket).where(in_project))
+    total = await session.scalar(select(func.count()).select_from(Ticket).where(*conditions))
     return list(rows), total or 0
 
 
@@ -77,8 +135,15 @@ async def update_ticket(
     embedder: Embedder,
 ) -> Ticket:
     ticket = await get_ticket(session, ticket_id, actor)
+    role = await access.project_role(session, ticket.project_id, actor)
     changes = data.model_dump(exclude_unset=True)
-    if "duplicate_of" in changes:
+    if role is ProjectRole.EMPLOYEE:
+        _check_employee_change(ticket, changes, actor)
+    if changes.get("assignee_id") is not None:
+        await _check_assignee(session, ticket.project_id, changes["assignee_id"])
+    if changes.get("parent_id") is not None:
+        await _check_parent(session, ticket.project_id, ticket.id, changes["parent_id"])
+    if changes.get("duplicate_of") is not None:
         await _check_duplicate_target(session, ticket, changes["duplicate_of"])
 
     before = {name: getattr(ticket, name) for name in changes}
@@ -99,6 +164,31 @@ async def update_ticket(
             before={name: before[name] for name in shown},
             after={name: getattr(ticket, name) for name in shown},
         ),
+    )
+    return ticket
+
+
+async def return_to_manager(
+    session: AsyncSession, ticket_id: uuid.UUID, reason: str, actor: User
+) -> Ticket:
+    """The assignee hands a ticket back: unassigned, back to To do, reason kept as a comment."""
+    ticket = await get_ticket(session, ticket_id, actor)
+    if ticket.assignee_id != actor.id:
+        raise ForbiddenError("Only the assignee can return this ticket")
+    if ticket.status in _CLOSED:
+        raise InvalidRequestError("Closed tickets can't be returned")
+    ticket.assignee_id = None
+    ticket.status = TicketStatus.TODO
+    session.add(
+        TicketComment(
+            ticket_id=ticket.id, author_id=actor.id, body=f"Returned to manager: {reason}"
+        )
+    )
+    await session.commit()
+    await session.refresh(ticket)
+    logger.info(
+        "audit.ticket.returned",
+        extra=log_fields(actor=actor.id, ticket_id=ticket.id, reason_len=len(reason)),
     )
     return ticket
 
@@ -136,6 +226,81 @@ async def find_similar(
     return found
 
 
+def _filter_conditions(filters: TicketFilters) -> list[ColumnElement[bool]]:
+    conditions: list[ColumnElement[bool]] = []
+    if filters.statuses:
+        conditions.append(Ticket.status.in_(filters.statuses))
+    if filters.unassigned:
+        conditions.append(Ticket.assignee_id.is_(None))
+    elif filters.assignee_id is not None:
+        conditions.append(Ticket.assignee_id == filters.assignee_id)
+    if filters.category is not None:
+        conditions.append(Ticket.category == filters.category)
+    if filters.label:
+        conditions.append(Ticket.labels.contains([filters.label.strip().lower()]))
+    if filters.parent_id is not None:
+        conditions.append(Ticket.parent_id == filters.parent_id)
+    if filters.search:
+        # Escape LIKE wildcards so a search for "100%" means the text, not a pattern.
+        term = filters.search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{term}%"
+        matches = or_(
+            Ticket.title.ilike(pattern, escape="\\"), Ticket.description.ilike(pattern, escape="\\")
+        )
+        if filters.search.isdigit():  # "42" also finds PM-42
+            matches = or_(matches, Ticket.number == int(filters.search))
+        conditions.append(matches)
+    return conditions
+
+
+def _check_employee_change(ticket: Ticket, changes: dict[str, object], actor: User) -> None:
+    if changes.keys() - _EMPLOYEE_FIELDS:
+        raise ForbiddenError("Only managers can change these fields")
+    if ticket.assignee_id != actor.id:
+        raise ForbiddenError("Only the assignee can move this ticket")
+    if ticket.status in _CLOSED or changes.get("status") in _CLOSED:
+        raise ForbiddenError("Only managers can close or reopen tickets")
+
+
+async def _check_assignee(session: AsyncSession, project_id: uuid.UUID, user_id: uuid.UUID) -> None:
+    is_member = await session.scalar(
+        select(
+            exists().where(
+                and_(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id)
+            )
+        )
+    )
+    if not is_member:
+        raise InvalidRequestError("The assignee must be a member of the project")
+
+
+async def _check_parent(
+    session: AsyncSession, project_id: uuid.UUID, ticket_id: uuid.UUID | None, parent_id: uuid.UUID
+) -> None:
+    """Sub-tasks are one level deep, in the same project."""
+    if parent_id == ticket_id:
+        raise InvalidRequestError("A ticket can't be its own parent")
+    parent = await session.get(Ticket, parent_id)
+    if parent is None or parent.project_id != project_id:
+        raise InvalidRequestError("The parent must be a ticket in the same project")
+    if parent.parent_id is not None:
+        raise InvalidRequestError("Sub-tasks can't have sub-tasks")
+    if ticket_id is not None:
+        has_children = await session.scalar(select(exists().where(Ticket.parent_id == ticket_id)))
+        if has_children:
+            raise InvalidRequestError("A ticket with sub-tasks can't become a sub-task")
+
+
+async def _check_duplicate_target(
+    session: AsyncSession, ticket: Ticket, target_id: uuid.UUID
+) -> None:
+    if target_id == ticket.id:
+        raise InvalidRequestError("A ticket cannot be a duplicate of itself")
+    target = await session.get(Ticket, target_id)
+    if target is None or target.project_id != ticket.project_id:
+        raise InvalidRequestError("duplicate_of must be a ticket in the same project")
+
+
 async def _next_number(session: AsyncSession, project_id: uuid.UUID) -> int:
     # One UPDATE ... RETURNING locks the row, so concurrent creates get distinct numbers.
     number = await session.scalar(
@@ -147,18 +312,6 @@ async def _next_number(session: AsyncSession, project_id: uuid.UUID) -> int:
     if number is None:
         raise NotFoundError("Project not found")
     return number
-
-
-async def _check_duplicate_target(
-    session: AsyncSession, ticket: Ticket, target_id: uuid.UUID | None
-) -> None:
-    if target_id is None:
-        return
-    if target_id == ticket.id:
-        raise InvalidRequestError("A ticket cannot be a duplicate of itself")
-    target = await session.get(Ticket, target_id)
-    if target is None or target.project_id != ticket.project_id:
-        raise InvalidRequestError("duplicate_of must be a ticket in the same project")
 
 
 async def _set_embedding(ticket: Ticket, embedder: Embedder) -> None:

@@ -42,17 +42,17 @@ async def test_project_key_is_validated_and_unique_per_workspace(
     assert taken.status_code == 409
 
 
-async def test_added_employee_sees_project_and_can_create_tickets(
+async def test_added_employee_sees_project_and_its_tickets(
     manager: AsyncClient, project_id: str, login: Login
 ) -> None:
     employee = await login("emp")
     await add(manager, project_id, "emp")
 
     projects = (await employee.get(f"/workspaces/{await workspace_id(employee)}/projects")).json()
-    ticket = await employee.post(f"/projects/{project_id}/tickets", json={"title": "Fix it"})
+    tickets = await employee.get(f"/projects/{project_id}/tickets")
 
     assert [(p["key"], p["role"]) for p in projects] == [("PM", "employee")]
-    assert ticket.status_code == 201
+    assert tickets.status_code == 200
 
 
 async def test_employees_cannot_manage_members_or_create_projects(

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "gen:api": "cd ../backend && uv run python -m scripts.export_openapi ../frontend/src/lib/api/openapi.json && cd ../frontend && openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts",
+    "gen:api": "cd ../backend && uv run python -m scripts.export_openapi ../frontend/src/lib/api/openapi.json && cd ../frontend && openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts --default-non-nullable false",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
