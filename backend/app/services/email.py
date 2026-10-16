@@ -1,6 +1,7 @@
 import logging
 from dataclasses import dataclass
 from email.message import EmailMessage as MimeMessage
+from email.policy import SMTP
 from functools import lru_cache
 from typing import Protocol
 
@@ -32,15 +33,26 @@ class SmtpEmailSender:
         self._starttls = starttls
 
     async def send(self, message: EmailMessage) -> None:
-        mime = MimeMessage()
-        mime["From"] = self._sender
-        mime["To"] = message.to
-        mime["Subject"] = message.subject
-        mime.set_content(message.body)
+        mime = to_mime(message, self._sender)
         await aiosmtplib.send(
             mime, hostname=self._host, port=self._port, start_tls=self._starttls, timeout=10
         )
         logger.info("email.sent", extra=log_fields(template=message.template))
+
+
+# The default policy wraps lines at 78 characters by switching to quoted-printable, which
+# breaks long links (token=3D..., soft line breaks) when copied from some clients. SMTP itself
+# allows 998, so plain 7-bit text keeps every link on one intact line.
+_POLICY = SMTP.clone(max_line_length=998)
+
+
+def to_mime(message: EmailMessage, sender: str) -> MimeMessage:
+    mime = MimeMessage(policy=_POLICY)
+    mime["From"] = sender
+    mime["To"] = message.to
+    mime["Subject"] = message.subject
+    mime.set_content(message.body, cte="7bit")
+    return mime
 
 
 @lru_cache(maxsize=1)
