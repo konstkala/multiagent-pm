@@ -118,6 +118,17 @@ class CommentRead(BaseModel):
     edited_at: datetime | None
 
 
+class AttachmentRead(BaseModel):
+    id: uuid.UUID
+    ticket_id: uuid.UUID
+    filename: str
+    content_type: str
+    size_bytes: int
+    uploader_id: uuid.UUID | None
+    uploader_name: str | None
+    created_at: datetime
+
+
 class LinkCreate(BaseModel):
     target_id: uuid.UUID
     type: LinkType

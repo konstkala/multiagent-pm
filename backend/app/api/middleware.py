@@ -8,6 +8,7 @@ from starlette.middleware.base import RequestResponseEndpoint
 
 from app.api.deps import SESSION_COOKIE
 from app.api.errors import error_response
+from app.core.config import settings
 from app.core.logging import log_fields, request_id_var
 
 logger = logging.getLogger(__name__)
@@ -58,4 +59,13 @@ async def require_csrf_header(request: Request, call_next: RequestResponseEndpoi
     ):
         logger.warning("security.csrf_header_missing", extra=log_fields(path=request.url.path))
         return error_response(403, "csrf_header_missing", f"Send the {CSRF_HEADER} header")
+    return await call_next(request)
+
+
+async def limit_request_size(request: Request, call_next: RequestResponseEndpoint) -> Response:
+    """Refuse oversized bodies from their declared size, before any of it is read or stored.
+    The largest legitimate body is one attachment plus multipart overhead."""
+    declared = request.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > settings.attachment_max_bytes + 2**20:
+        return error_response(413, "file_too_large", "The request is too large")
     return await call_next(request)

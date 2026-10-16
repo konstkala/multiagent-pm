@@ -42,6 +42,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api :8000 → web :3000). Stop local dev servers first: same ports
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
 - Real embedding model test (free, downloads the model once): `uv run pytest -m model`
+- Real object storage test: `docker compose up -d storage`, then `uv run pytest -m storage`
 - Test one: `uv run pytest tests/test_health.py::test_health_returns_ok`
 - Tests use a throwaway `pm_test` database built from the migrations; each test is rolled back
 - Check (run before saying done): `uv run ruff check --fix . && uv run ruff format . && uv run pyright && uv run pytest`
@@ -74,6 +75,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 9. Self-hosted auth: argon2id, Google OIDC, opaque session cookies stored hashed (0011).
 10. Workspace → projects → per-project roles manager/employee (0012).
 11. Assignment agent recommends top 3; manager picks (0013). Story points + due dates (0014).
+12. Attachments in S3-compatible storage via boto3; SeaweedFS locally, S3/R2 in production (0015).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.

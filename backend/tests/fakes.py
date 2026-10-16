@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from app.db.models.ticket import EMBEDDING_DIM
 from app.services.email import EmailMessage
 from app.services.google import GoogleIdentity, GoogleSignInError
+from app.services.storage import StorageError
 
 
 class FakeEmbedder:
@@ -53,6 +54,30 @@ class FakeGoogle:
         if self.fail or nonce != self.last_nonce:
             raise GoogleSignInError("rejected")
         return self.identity
+
+
+class MemoryStorage:
+    """Object storage in a dict. `fail` simulates the storage service being down."""
+
+    def __init__(self) -> None:
+        self.objects: dict[str, tuple[bytes, str]] = {}
+        self.fail = False
+
+    async def put(self, key: str, data: bytes, content_type: str) -> None:
+        self._check()
+        self.objects[key] = (data, content_type)
+
+    async def get(self, key: str) -> bytes:
+        self._check()
+        return self.objects[key][0]
+
+    async def delete(self, key: str) -> None:
+        self._check()
+        self.objects.pop(key, None)
+
+    def _check(self) -> None:
+        if self.fail:
+            raise StorageError("down")
 
 
 class Outbox:

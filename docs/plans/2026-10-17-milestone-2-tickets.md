@@ -25,7 +25,7 @@ Parent: [product plan v1](2026-10-16-product-v1.md). Decisions 2026-10-17.
 Enforced in the service layer; outsiders still get 404.
 
 ## Attachments
-- MinIO (S3 API) in Docker locally; S3 or Cloudflare R2 in production. boto3 behind a small `Storage` interface.
+- S3 API through boto3 behind a small `Storage` interface: SeaweedFS in Docker locally (MinIO no longer publishes images), S3 or Cloudflare R2 in production.
 - Upload through the API (multipart): one place for permission checks, a 10 MB limit and an allowed-types list (images, PDF, text, CSV, Office documents, ZIP). SVG and HTML are refused because browsers can run scripts in them.
 - Downloads through the API after a permission check, with `Content-Disposition` and `nosniff`.
 - Object keys are random; the original filename is stored separately and cleaned.
@@ -37,7 +37,7 @@ Enforced in the service layer; outsiders still get 404.
 
 ## Steps (commit after each)
 - 2a Schema + ticket API (statuses, fields, permissions, sub-tasks, links, copy, return, filters, comments). **Done** (migration 0007 converts old data; 16 new tests)
-- 2b Attachments with MinIO
+- 2b Attachments. **Done**: SeaweedFS replaces MinIO, whose images are gone (ADR 0015); 13 new tests
 - 2c List and detail pages
 - 2d Board with drag and drop
 

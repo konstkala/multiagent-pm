@@ -27,6 +27,14 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     session_ttl_days: int = 14
     # Mailpit locally: a fake inbox at http://localhost:8025.
+    # Object storage (S3 API): SeaweedFS locally, S3 or R2 in production. These development
+    # credentials match infra/seaweedfs/s3.json and are overridden by env vars elsewhere.
+    s3_endpoint_url: str | None = "http://localhost:8333"
+    s3_region: str = "us-east-1"
+    s3_bucket: str = "pm-attachments"
+    s3_access_key: str = "pm-dev-access"
+    s3_secret_key: SecretStr = SecretStr("pm-dev-secret")
+    attachment_max_bytes: int = 10 * 2**20
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_starttls: bool = False

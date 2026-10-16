@@ -38,6 +38,16 @@ class ConflictError(DomainError):
     code = "conflict"
 
 
+class FileTooLargeError(DomainError):
+    status_code = 413
+    code = "file_too_large"
+
+
+class StorageUnavailableError(DomainError):
+    status_code = 503
+    code = "storage_unavailable"
+
+
 class InvalidRequestError(DomainError):
     status_code = 422
     code = "invalid_request"

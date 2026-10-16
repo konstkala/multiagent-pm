@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "pm-backend",
+      "credentials": [{ "accessKey": "pm-dev-access", "secretKey": "pm-dev-secret" }],
+      "actions": ["Read", "Write", "List", "Tagging", "Admin"]
+    }
+  ]
+}
