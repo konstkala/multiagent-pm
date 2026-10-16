@@ -39,6 +39,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Dev server: `uv run fastapi dev app/main.py` → http://localhost:8000/docs
 - Fake inbox (Mailpit, part of the compose stack): http://localhost:8025
 - Frontend (from `frontend/`): `npm run dev` (http://localhost:3000) · `npm run check` (lint + types + build) · `npm run gen:api` after API changes
+- Worker (from `backend/`): `uv run python -m app.worker` · in Docker it's the `worker` service
 - Whole stack in Docker (repo root): `docker compose up -d --build` (db → migrate job → api :8000 → web :3000). Stop local dev servers first: same ports
 - Test all: `uv run pytest` (needs DB) · without DB: `uv run pytest -m "not db and not llm"`
 - Real embedding model test (free, downloads the model once): `uv run pytest -m model`

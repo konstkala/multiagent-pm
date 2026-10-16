@@ -1,3 +1,4 @@
+from app.db.models.job import Job, JobStatus
 from app.db.models.ticket import (
     STORY_POINTS,
     LinkType,
@@ -31,6 +32,8 @@ __all__ = [
     "STORY_POINTS",
     "EmailToken",
     "EmailTokenPurpose",
+    "Job",
+    "JobStatus",
     "LinkType",
     "OAuthIdentity",
     "OAuthState",

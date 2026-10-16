@@ -74,6 +74,17 @@ A few words each. New technologies are added as they appear.
 | **PKCE** | A one-time secret proving the code exchange comes from whoever started sign-in | A stolen authorization code is useless on its own |
 | **state / nonce** | Random values tying Google's answer to this browser and this attempt | Stops login CSRF and token replay |
 
+### Background work
+
+| Tech | What it is | Why we use it |
+|---|---|---|
+| **Job queue** | A table of work to do later, picked up by workers | Slow or failure-prone work (AI calls) never blocks a web request |
+| **SELECT … FOR UPDATE SKIP LOCKED** | Lock a row and skip rows others have locked | Many workers can pull from one queue without ever taking the same job |
+| **At-least-once delivery** | A job may run twice (e.g. a worker dies after finishing) | Handlers are written to be safe to repeat |
+| **Exponential backoff** | Wait 30 s, 60 s, 120 s… between retries | Gives a struggling dependency time to recover instead of hammering it |
+| **Graceful shutdown (SIGTERM)** | Finish current work, then exit, when asked to stop | Deploys and scaling don't cut jobs in half |
+| **Flaky test** | A test that sometimes fails with no code change | Usually a hidden timing assumption; fix the assumption, don't retry the test |
+
 ### Tickets and files
 
 | Tech | What it is | Why we use it |

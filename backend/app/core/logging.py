@@ -5,6 +5,8 @@ from contextvars import ContextVar
 from datetime import UTC, datetime
 
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
+# Set by the worker for each job, so every line a job writes can be traced back to it.
+run_id_var: ContextVar[str | None] = ContextVar("run_id", default=None)
 
 # Backstop only: callers must not pass secrets in the first place.
 _SENSITIVE_KEYS = ("password", "secret", "token", "api_key", "authorization", "cookie")
@@ -34,6 +36,8 @@ class JsonFormatter(logging.Formatter):
         }
         if request_id := request_id_var.get():
             entry["request_id"] = request_id
+        if run_id := run_id_var.get():
+            entry["run_id"] = run_id
         fields: dict[str, object] | None = getattr(record, "fields", None)
         if fields:
             entry.update(_redact(fields))

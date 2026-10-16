@@ -71,6 +71,22 @@ services:
       storage:
         condition: service_healthy
 
+  # Runs background jobs (AI agents, emails later). Same image as the API, different command.
+  # `docker compose up -d --scale worker=3` runs three in parallel; SKIP LOCKED keeps them apart.
+  worker:
+    <<: *backend
+    command: ["python", "-m", "app.worker"]
+    # The image's health check calls the API's /health; a worker serves no HTTP.
+    healthcheck:
+      disable: true
+    # A job in progress gets time to finish after SIGTERM before Docker kills the process.
+    stop_grace_period: 60s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      storage:
+        condition: service_healthy
+
   # The app people use: http://localhost:3000. It proxies /api to the api service.
   web:
     image: pm-web:dev
