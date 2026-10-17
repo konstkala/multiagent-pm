@@ -17,6 +17,10 @@ export type Workspace = Schemas["WorkspaceRead"];
 export type Project = Schemas["ProjectRead"];
 export type Member = Schemas["MemberRead"];
 export type Ticket = Schemas["TicketRead"];
+export type Invitation = Schemas["InvitationRead"];
+export type Person = Schemas["PersonRead"];
+export type Profile = Schemas["ProfileRead"];
+export type CvImport = Schemas["CvImportRead"];
 
 /** An error response from the API, in its one standard shape. */
 export class ApiError extends Error {

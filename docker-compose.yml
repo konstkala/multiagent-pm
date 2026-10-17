@@ -2,6 +2,11 @@
 x-backend: &backend
   image: pm-backend:dev
   build: ./backend
+  # Secrets such as ANTHROPIC_API_KEY come from backend/.env at runtime, never baked into the
+  # image. Values under `environment` below win, so container addresses stay correct.
+  env_file:
+    - path: ./backend/.env
+      required: false
   environment:
     # Inside the compose network services are reached by name, not localhost.
     DATABASE_URL: postgresql+asyncpg://pm:pm@db:5432/pm

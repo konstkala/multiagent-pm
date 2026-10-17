@@ -67,3 +67,13 @@ async def test_middleware_logs_request_without_query_string(
     assert fields["path"] == "/health"
     assert fields["status"] == 200
     assert "secret" not in json.dumps(fields)
+
+
+def test_fields_cannot_overwrite_correlation_ids() -> None:
+    token = request_id_var.set("ours")
+    try:
+        entry = format_record(request_id="theirs", user_id=1)
+    finally:
+        request_id_var.reset(token)
+
+    assert entry["request_id"] == "ours"

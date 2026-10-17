@@ -4,7 +4,7 @@ Goal: anyone can trace what happened, who or what did it, and why, without the l
 
 - Use `logging.getLogger(__name__)` + `core/logging`. JSON lines only. No `print`.
 - The message is a stable event name `area.action` (`http.request`, `llm.call`, `triage.classified`). Details go in `extra=log_fields(...)`, never formatted into the message.
-- Every line carries a correlation id: `request_id` for HTTP (set by the middleware), `run_id` for agent runs and jobs.
+- Every line carries a correlation id: `request_id` for HTTP (set by the middleware), `run_id` for jobs (set by the worker). Never overwrite these from a log call; name other ids explicitly (`budget_id`, `import_id`).
 - Log at the boundaries:
   - HTTP request: method, path, status, duration
   - job: start, end, failure

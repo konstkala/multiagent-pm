@@ -34,13 +34,14 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "event": record.getMessage(),
         }
+        fields: dict[str, object] | None = getattr(record, "fields", None)
+        if fields:
+            entry.update(_redact(fields))
+        # Applied last, so no log call can overwrite the ids that tie lines together.
         if request_id := request_id_var.get():
             entry["request_id"] = request_id
         if run_id := run_id_var.get():
             entry["run_id"] = run_id
-        fields: dict[str, object] | None = getattr(record, "fields", None)
-        if fields:
-            entry.update(_redact(fields))
         if record.exc_info:
             entry["exc"] = self.formatException(record.exc_info)
         return json.dumps(entry, default=str)

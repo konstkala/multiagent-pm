@@ -34,11 +34,11 @@ Phases refer to [the triage v1 plan](../plans/2026-10-16-ticket-triage-v1.md).
 | [x] | LLM gateway | `core/llm`: routing, retries, refusals, cost logging, budget guard (first real call passed 2026-10-16) | Phase 1 |
 | [ ] | LLM observability | Langfuse traces: tokens, $ and latency per run | Phase 1 |
 | [x] | Embeddings + retrieval | Local embeddings, pgvector HNSW, similarity thresholds | Phase 3 |
-| [ ] | Structured output | PydanticAI typed outputs, validation, retries on bad output | Phase 4 |
+| [x] | Structured output | Gateway `complete_structured()` (SDK `messages.parse`), validated Pydantic output, limits enforced in code | Milestone 3 |
 | [ ] | Prompt engineering + caching | Prompt files, stable prefix first, cache hit rate | Phase 4 |
 | [ ] | Workflows vs agents | LangGraph state, nodes, checkpoints; why triage is a workflow | Phase 4 |
 | [ ] | Human-in-the-loop | LangGraph interrupts, approval API, resume | Phase 4–5 |
-| [ ] | Background jobs | Postgres queue with `SKIP LOCKED`, worker process | Phase 4 |
+| [x] | Background jobs | Postgres queue with `SKIP LOCKED`, worker process, retries with backoff, graceful shutdown | Milestone 3 |
 | [ ] | Evals | Labelled set, per-field accuracy, $/run, p95; eval in CI | Phase 5 |
 | [ ] | LLM security | Prompt injection, untrusted input, tool permissions, OWASP LLM Top 10 | Phase 4+ |
 | [ ] | Cost optimization | Model cascade (Haiku → Sonnet), Batch API, effort tuning | Later |

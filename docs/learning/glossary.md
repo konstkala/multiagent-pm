@@ -85,6 +85,17 @@ A few words each. New technologies are added as they appear.
 | **Graceful shutdown (SIGTERM)** | Finish current work, then exit, when asked to stop | Deploys and scaling don't cut jobs in half |
 | **Flaky test** | A test that sometimes fails with no code change | Usually a hidden timing assumption; fix the assumption, don't retry the test |
 
+### AI agents and privacy
+
+| Tech | What it is | Why we use it |
+|---|---|---|
+| **Structured output** | The model must answer in a given JSON schema, validated into a Pydantic object | No parsing free text; a bad answer fails loudly |
+| **PDF input** | Claude reads a PDF directly (text + page images) | No PDF parsing library needed; layout is understood |
+| **Prompt injection** | Text inside data (a CV, a ticket) that tries to give the model orders | Treated as data in the prompt; no tools to misuse; a person reviews the result |
+| **Human in the loop** | A person approves before an AI result takes effect | The manager is accountable for profiles; EU rules treat CV-based decisions as high-risk |
+| **Data minimisation (GDPR)** | Keep personal data only as long as needed | The CV is deleted after reading; the draft after the decision |
+| **Correlation id** | One id on every log line of a request or job | One search shows the whole story; never overwrite it |
+
 ### Tickets and files
 
 | Tech | What it is | Why we use it |

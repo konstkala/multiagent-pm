@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Alert, Button, TextField } from "@/components/ui";
 import { api, call, errorText } from "@/lib/api/client";
 
 export function SignUpForm() {
+  const invitedEmail = useSearchParams().get("email") ?? undefined;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
@@ -55,7 +57,14 @@ export function SignUpForm() {
       {error ? <Alert tone="error">{error}</Alert> : null}
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <TextField label="Your name" name="display_name" autoComplete="name" required maxLength={100} />
-        <TextField label="Email" name="email" type="email" autoComplete="email" required />
+        <TextField
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          defaultValue={invitedEmail}
+        />
         <TextField
           label="Password"
           name="password"

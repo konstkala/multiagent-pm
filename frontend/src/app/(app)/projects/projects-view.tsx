@@ -6,7 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { Alert, Badge, Button, Card, Loading, TextField } from "@/components/ui";
 import { api, call, errorText, type Workspace } from "@/lib/api/client";
-import { keys, useProjects, useWorkspaces } from "@/lib/queries";
+import { keys, useMe, useProjects, useWorkspaces } from "@/lib/queries";
 
 export function ProjectsView() {
   const workspaces = useWorkspaces();
@@ -29,6 +29,7 @@ export function ProjectsView() {
 
 function WorkspaceSection({ workspace }: { workspace: Workspace }) {
   const projects = useProjects(workspace.id);
+  const me = useMe();
   const [creating, setCreating] = useState(false);
   const isOwner = workspace.role === "owner";
 
@@ -38,6 +39,17 @@ function WorkspaceSection({ workspace }: { workspace: Workspace }) {
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">{workspace.name}</h2>
           <Badge>{workspace.role}</Badge>
+          <Link href={`/people/${workspace.id}`} className="text-sm text-accent hover:underline">
+            People
+          </Link>
+          {me.data ? (
+            <Link
+              href={`/people/${workspace.id}/${me.data.id}`}
+              className="text-sm text-accent hover:underline"
+            >
+              My profile
+            </Link>
+          ) : null}
         </div>
         {isOwner && !creating ? (
           <Button variant="secondary" onClick={() => setCreating(true)}>

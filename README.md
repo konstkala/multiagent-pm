@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** Milestones 1 and 2 are done: accounts (email or Google), workspaces, projects and roles, and a Jira-style ticket experience (list, board, detail, comments, attachments). The AI agents come next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
+> **Status: early development.** Milestones 1–3 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, and the first AI agent (CV → skills profile, reviewed by a manager). Ticket triage and assignment agents come next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -48,6 +48,8 @@ Client ──► FastAPI ──► services ──► PostgreSQL + pgvector
         job queue ──► worker ──► LangGraph workflow ──► core/llm ──► Claude API
 ```
 
+Background work runs in a separate `worker` container that pulls jobs from Postgres (`SKIP LOCKED`). The first agent, CV → profile, runs there: one structured Haiku call reading the PDF directly, about $0.0007 per CV, with the CV deleted right after.
+
 Ticket triage workflow (planned; embedding and similar-ticket search already work): embed the ticket → find similar tickets → one Haiku call returns type, priority, labels, duplicate and suggested assignee with a confidence → apply labels → pause for human approval of assignee and priority → apply. Estimated cost: about $0.001–0.002 per ticket. Details: [docs/plans/](docs/plans/2026-10-16-ticket-triage-v1.md).
 
 ## API
@@ -71,6 +73,11 @@ Ticket triage workflow (planned; embedding and similar-ticket search already wor
 | POST | `/auth/sign-up`, `/auth/verify-email`, `/auth/resend-verification` | Create an account and confirm the email |
 | POST | `/auth/sign-in`, `/auth/sign-out` · GET `/auth/me` | Session cookie sign-in |
 | POST | `/auth/forgot-password`, `/auth/reset-password` | Reset by email link |
+| POST, GET | `/projects/{id}/invitations` · DELETE `/invitations/{id}` | Invite by email, list pending, revoke |
+| POST | `/invitations/preview`, `/invitations/accept` | Token in the body; accepting needs the invited, verified email |
+| GET | `/workspaces/{id}/people` · GET, PUT `.../people/{user}/profile` | People and profiles (managers, or yourself) |
+| POST | `/workspaces/{id}/people/{user}/cv` | Upload a PDF CV: 202, the CV agent drafts a profile in the background |
+| GET, POST | `/cv-imports/{id}` · `/approve` · `/reject` | Review the draft (with cost and latency), approve with edits or reject |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
 Everything except `/health` and `/auth/*` requires sign-in, and people outside a project get 404 for it. Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
@@ -151,6 +158,7 @@ docs/
 | M1 | Auth (email + Google), workspaces, projects, roles, Next.js app shell | Done |
 | 2 | Tickets domain, API and backend Dockerfile | Done |
 | M2 | Ticket workflow, sub-tasks, links, comments, attachments; list, board and detail screens | Done |
+| M3 | Invitations, employee profiles, job queue + worker, **CV agent** (Haiku reads a PDF CV, a manager reviews) | Done |
 | 3 | Local embeddings and similar-ticket search | Done |
 | 4 | Triage workflow with LangGraph, background worker, approval pause | Next |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |

@@ -112,7 +112,7 @@ class LLMClient:
         except pydantic.ValidationError as exc:
             logger.warning(
                 "llm.invalid_output",
-                extra=log_fields(run_id=budget.run_id, model=model, errors=exc.error_count()),
+                extra=log_fields(budget_id=budget.run_id, model=model, errors=exc.error_count()),
             )
             raise LLMError(f"{model} returned output that doesn't fit the schema") from exc
 
@@ -142,7 +142,7 @@ class LLMClient:
         logger.info(
             "llm.call",
             extra=log_fields(
-                run_id=budget.run_id,
+                budget_id=budget.run_id,
                 tier=tier.value,
                 model=model,
                 effort=effort,
@@ -162,11 +162,11 @@ class LLMClient:
         logger.exception(
             "llm.error",
             extra=log_fields(
-                run_id=budget.run_id,
+                budget_id=budget.run_id,
                 model=model,
                 error=type(exc).__name__,
                 status=getattr(exc, "status_code", None),
-                request_id=getattr(exc, "request_id", None),
+                api_request_id=getattr(exc, "request_id", None),  # Anthropic support asks for it
                 detail=exc.message[:300],  # API's own description; never our prompt
             ),
         )
@@ -180,7 +180,7 @@ class LLMClient:
             logger.warning(
                 "llm.budget_exceeded",
                 extra=log_fields(
-                    run_id=budget.run_id,
+                    budget_id=budget.run_id,
                     spent_usd=round(budget.spent_usd, 6),
                     cap_usd=budget.cap_usd,
                 ),
@@ -192,7 +192,7 @@ class LLMClient:
         category = response.stop_details.category if response.stop_details else None
         logger.warning(
             "llm.refusal",
-            extra=log_fields(run_id=budget.run_id, model=model, category=category),
+            extra=log_fields(budget_id=budget.run_id, model=model, category=category),
         )
         raise LLMRefusalError(f"{model} refused the request (category: {category})")
 

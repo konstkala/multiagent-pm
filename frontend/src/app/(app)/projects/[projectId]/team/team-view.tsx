@@ -2,12 +2,14 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 
 import { Avatar } from "@/components/tickets";
-import { Alert, Badge, Button, Card, Loading, Select, TextField } from "@/components/ui";
-import { api, call, errorText, send, type Member } from "@/lib/api/client";
+import { Alert, Badge, Button, Card, Loading } from "@/components/ui";
+import { api, errorText, send, type Member } from "@/lib/api/client";
 import { keys, useMe, useMembers, useProject } from "@/lib/queries";
+
+import { Invitations } from "./invitations";
 
 type Role = Member["role"];
 
@@ -39,11 +41,7 @@ export function TeamView() {
           </ul>
         </Card>
       </div>
-      {isManager ? (
-        <Card title="Add someone">
-          <AddMember projectId={projectId} />
-        </Card>
-      ) : null}
+      {isManager ? <Invitations projectId={projectId} /> : null}
     </div>
   );
 }
@@ -128,48 +126,5 @@ function MemberRow({
       ) : null}
       {error ? <Alert tone="error">{errorText(error)}</Alert> : null}
     </li>
-  );
-}
-
-function AddMember({ projectId }: { projectId: string }) {
-  const queryClient = useQueryClient();
-  const add = useMutation({
-    mutationFn: (body: { email: string; role: Role }) =>
-      call(
-        api.POST("/projects/{project_id}/members", {
-          params: { path: { project_id: projectId } },
-          body,
-        }),
-      ),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.members(projectId) }),
-  });
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formElement = event.currentTarget;
-    const form = new FormData(formElement);
-    add.mutate(
-      {
-        email: String(form.get("email")),
-        role: form.get("role") === "manager" ? "manager" : "employee",
-      },
-      { onSuccess: () => formElement.reset() },
-    );
-  }
-
-  return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-3">
-      <p className="text-xs text-muted">They need an account with a confirmed email.</p>
-      {add.isError ? <Alert tone="error">{errorText(add.error)}</Alert> : null}
-      {add.isSuccess ? <Alert tone="success">Added.</Alert> : null}
-      <TextField label="Email" name="email" type="email" required />
-      <Select label="Role" name="role" defaultValue="employee">
-        <option value="employee">employee</option>
-        <option value="manager">manager</option>
-      </Select>
-      <Button type="submit" pending={add.isPending}>
-        Add to project
-      </Button>
-    </form>
   );
 }

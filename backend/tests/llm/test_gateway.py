@@ -143,7 +143,7 @@ async def test_complete_logs_call_without_prompt_text(caplog: pytest.LogCaptureF
 
     record = next(r for r in caplog.records if r.getMessage() == "llm.call")
     fields = record.__dict__["fields"]
-    assert fields["run_id"] == "run-7"
+    assert fields["budget_id"] == "run-7"
     assert fields["model"] == HAIKU
     assert fields["input_tokens"] == 1000
     assert "Printer is on fire" not in json.dumps(fields)
@@ -184,7 +184,7 @@ async def test_complete_logs_api_error_details(caplog: pytest.LogCaptureFixture)
 
     record = next(r for r in caplog.records if r.getMessage() == "llm.error")
     fields = record.__dict__["fields"]
-    assert fields["run_id"] == "run-9"
+    assert fields["budget_id"] == "run-9"
     assert fields["error"] == "APIConnectionError"
     assert "Printer is on fire" not in json.dumps(fields)
 

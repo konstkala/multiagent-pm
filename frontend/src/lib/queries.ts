@@ -131,3 +131,66 @@ export function useSimilar(ticketId: string) {
     retry: false, // 409 just means "no embedding yet"
   });
 }
+
+export const peopleKeys = {
+  invitations: (projectId: string) => ["projects", projectId, "invitations"] as const,
+  people: (workspaceId: string) => ["workspaces", workspaceId, "people"] as const,
+  profile: (workspaceId: string, userId: string) =>
+    ["workspaces", workspaceId, "people", userId] as const,
+  imports: (workspaceId: string) => ["workspaces", workspaceId, "cv-imports"] as const,
+};
+
+export function useInvitations(projectId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: peopleKeys.invitations(projectId),
+    queryFn: () =>
+      call(
+        api.GET("/projects/{project_id}/invitations", {
+          params: { path: { project_id: projectId } },
+        }),
+      ),
+    enabled, // managers only
+  });
+}
+
+/** Succeeds only for people managers, so it doubles as the "can I manage people?" check. */
+export function usePeople(workspaceId: string) {
+  return useQuery({
+    queryKey: peopleKeys.people(workspaceId),
+    queryFn: () =>
+      call(
+        api.GET("/workspaces/{workspace_id}/people", {
+          params: { path: { workspace_id: workspaceId } },
+        }),
+      ),
+    retry: false,
+  });
+}
+
+export function useProfile(workspaceId: string, userId: string) {
+  return useQuery({
+    queryKey: peopleKeys.profile(workspaceId, userId),
+    queryFn: () =>
+      call(
+        api.GET("/workspaces/{workspace_id}/people/{user_id}/profile", {
+          params: { path: { workspace_id: workspaceId, user_id: userId } },
+        }),
+      ),
+  });
+}
+
+export function useCvImports(workspaceId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: peopleKeys.imports(workspaceId),
+    queryFn: () =>
+      call(
+        api.GET("/workspaces/{workspace_id}/cv-imports", {
+          params: { path: { workspace_id: workspaceId } },
+        }),
+      ),
+    enabled,
+    // While the agent works, check every 2 s; stop once nothing is queued.
+    refetchInterval: (query) =>
+      query.state.data?.some((cvImport) => cvImport.status === "queued") ? 2000 : false,
+  });
+}

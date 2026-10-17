@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: securityHeaders },
       // These URLs carry one-time tokens; never leak them to other sites via Referer.
       {
-        source: "/(verify-email|reset-password)",
+        source: "/(verify-email|reset-password|invite)",
         headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
       },
     ];
