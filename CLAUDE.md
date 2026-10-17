@@ -77,6 +77,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 10. Workspace → projects → per-project roles manager/employee (0012).
 11. Assignment agent recommends top 3; manager picks (0013). Story points + due dates (0014).
 12. Attachments in S3-compatible storage via boto3; SeaweedFS locally, S3/R2 in production (0015).
+13. Assignment scoring: lazy profile embeddings, the LLM sees letters + facts only, every pick recorded for a hit rate (0017). Job priority: interactive before background (0018).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.

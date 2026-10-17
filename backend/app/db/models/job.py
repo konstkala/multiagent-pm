@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import DateTime, Index, Integer, String, func, text
+from sqlalchemy import DateTime, Index, Integer, SmallInteger, String, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,8 +23,8 @@ class Job(Base):
 
     __tablename__ = "jobs"
     __table_args__ = (
-        # Workers look for the oldest runnable job; this index is exactly that lookup.
-        Index("ix_jobs_runnable", "status", "run_after"),
+        # Workers look for the most urgent, then oldest, runnable job: exactly this index.
+        Index("ix_jobs_runnable", "status", "priority", "run_after"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -37,6 +37,8 @@ class Job(Base):
     )
     attempts: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     max_attempts: Mapped[int] = mapped_column(Integer, server_default=text("3"))
+    # Lower runs first, like Unix `nice`: a person waiting on screen beats background work.
+    priority: Mapped[int] = mapped_column(SmallInteger, server_default=text("10"))
     run_after: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     # Nullable: set while a worker holds the job.
     locked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

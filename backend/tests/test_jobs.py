@@ -47,6 +47,18 @@ async def test_claim_takes_the_oldest_runnable_job(db_session: AsyncSession) -> 
     assert claimed[2] is None  # the future job waits
 
 
+async def test_claim_serves_a_waiting_person_before_background_work(
+    db_session: AsyncSession,
+) -> None:
+    backlog = [await add_job(db_session, "triage") for _ in range(3)]
+    urgent = jobs.enqueue(db_session, "assignment_reasons", {"n": 1}, priority=jobs.INTERACTIVE)
+    await db_session.commit()
+
+    claimed = [await jobs.claim(db_session) for _ in range(4)]
+
+    assert [job.id for job in claimed if job] == [urgent.id, *(job.id for job in backlog)]
+
+
 async def test_failures_retry_with_growing_backoff_then_give_up(db_session: AsyncSession) -> None:
     job = await add_job(db_session)
     delays: list[timedelta] = []

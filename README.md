@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** Milestones 1–4 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, and two AI agents: CV → skills profile, and ticket triage, both reviewed by a manager. The assignment agent comes next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
+> **Status: early development.** Milestones 1–5 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, and three AI agents, each with a manager making the final call: CV → skills profile, ticket triage, and assignee suggestions. Dashboards and the calendar come next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -52,6 +52,8 @@ Background work runs in a separate `worker` container that pulls jobs from Postg
 
 The triage agent runs there too. A new ticket queues a run; the worker gathers similar tickets (pgvector), the project's labels and image attachments, and one Haiku call returns category, labels, priority, story points and a possible duplicate, each with a confidence. Category and labels apply by themselves only when the agent is confident and the field is empty; everything else waits for a manager to accept (with edits) or dismiss. If a ticket is too vague to size, the agent asks one question first. Measured: **$0.0001 and ~2 s per ticket**. Ticket text is passed as data in tagged blocks the text can't close, and code validates every field the model returns. Details: [plan](docs/plans/2026-10-17-milestone-4-triage.md), [ADR 0016](docs/adr/0016-triage-without-langgraph.md).
 
+The assignment agent suggests who should take a ticket. Code ranks the project's members, for free and in about 80 ms: skill fit (ticket vs profile embedding, plus labels that match a named skill), similar tickets they finished, and availability (open points vs the team average, minus overdue work). The top 3 appear at once, each with its facts. One Haiku call then writes a reason for each one, seeing **letters and facts only, never names**. The manager assigns as usual, and every pick is recorded with its rank, which gives the agent's hit rate. Measured: **$0.00012 per click, reasons in ~4 s**. A job priority stops the click waiting behind background triage. Details: [plan](docs/plans/2026-10-17-milestone-5-assignment.md), [ADR 0017](docs/adr/0017-assignment-scoring.md), [ADR 0018](docs/adr/0018-job-priority.md).
+
 ## API
 
 | Method | Path | Purpose |
@@ -80,6 +82,7 @@ The triage agent runs there too. A new ticket queues a run; the worker gathers s
 | GET, POST | `/cv-imports/{id}` · `/approve` · `/reject` | Review the draft (with cost and latency), approve with edits or reject |
 | GET, POST | `/tickets/{id}/triage` | Latest triage run (members); re-run: 202 (managers) |
 | POST | `/triage-runs/{id}/answer` · `/accept` · `/dismiss` | Answer the agent's question, accept the suggestion with edits, or dismiss (managers) |
+| GET, POST | `/tickets/{id}/assignment-suggestions` | Latest suggestions; ask for new ones: 202 with the ranked top 3, reasons follow (managers) |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
 Everything except `/health` and `/auth/*` requires sign-in, and people outside a project get 404 for it. Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
@@ -163,7 +166,8 @@ docs/
 | M3 | Invitations, employee profiles, job queue + worker, **CV agent** (Haiku reads a PDF CV, a manager reviews) | Done |
 | 3 | Local embeddings and similar-ticket search | Done |
 | M4 | **Triage agent**: category, labels, priority, points, duplicates; one clarifying question; manager approval | Done |
-| M5 | Assignment agent: best teammate by skills and workload | Next |
+| M5 | **Assignment agent**: top 3 by skills, past work and workload; reasons from facts only; picks recorded | Done |
+| M6 | KPI dashboards (incl. agent hit rate), employee dashboard, calendar | Next |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |
 | 6 | Next.js frontend | Planned |
 | 7 | CI/CD, cloud deployment with Terraform, tracing and alerts | Planned |

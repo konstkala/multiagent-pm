@@ -797,6 +797,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tickets/{ticket_id}/assignment-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Latest Suggestions */
+        get: operations["latest_suggestions_tickets__ticket_id__assignment_suggestions_get"];
+        put?: never;
+        /**
+         * Suggest Assignees
+         * @description Ranked at once; the reasons follow from a background job (poll the GET).
+         */
+        post: operations["suggest_assignees_tickets__ticket_id__assignment_suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -809,6 +830,52 @@ export interface components {
              */
             project_id: string;
         };
+        /** AssignmentRunRead */
+        AssignmentRunRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Ticket Id
+             * Format: uuid
+             */
+            ticket_id: string;
+            status: components["schemas"]["AssignmentStatus"];
+            /** Candidates */
+            candidates: components["schemas"]["Candidate"][];
+            /** Error Code */
+            error_code: string | null;
+            /** Chosen User Id */
+            chosen_user_id: string | null;
+            /** Chosen Rank */
+            chosen_rank: number | null;
+            /** Decided At */
+            decided_at: string | null;
+            /** Score Ms */
+            score_ms: number;
+            /** Model */
+            model: string | null;
+            /** Llm Calls */
+            llm_calls: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Latency Ms */
+            latency_ms: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+        };
+        /**
+         * AssignmentStatus
+         * @enum {string}
+         */
+        AssignmentStatus: "explaining" | "ready" | "explain_failed";
         /** AttachmentRead */
         AttachmentRead: {
             /**
@@ -846,6 +913,49 @@ export interface components {
         Body_upload_attachment_tickets__ticket_id__attachments_post: {
             /** File */
             file: string;
+        };
+        /**
+         * Candidate
+         * @description Stored as JSON in the run and returned as is.
+         */
+        Candidate: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Rank */
+            rank: number;
+            /** Score */
+            score: number;
+            parts: components["schemas"]["ScoreParts"];
+            facts: components["schemas"]["CandidateFacts"];
+            /** Reason */
+            reason: string | null;
+        };
+        /**
+         * CandidateFacts
+         * @description The evidence behind a score, shown to the manager and given to the agent.
+         */
+        CandidateFacts: {
+            /** Has Profile */
+            has_profile: boolean;
+            /** Matched Skills */
+            matched_skills: components["schemas"]["SkillFact"][];
+            /** Strongest Skills */
+            strongest_skills: components["schemas"]["SkillFact"][];
+            /** Profile Match */
+            profile_match: number | null;
+            /** Similar Done */
+            similar_done: number;
+            /** Open Points */
+            open_points: number;
+            /** Team Avg Points */
+            team_avg_points: number;
+            /** Overdue */
+            overdue: number;
         };
         /** CommentRead */
         CommentRead: {
@@ -1200,6 +1310,15 @@ export interface components {
         RoleUpdate: {
             role: components["schemas"]["ProjectRole"];
         };
+        /** ScoreParts */
+        ScoreParts: {
+            /** Skill */
+            skill: number;
+            /** History */
+            history: number;
+            /** Availability */
+            availability: number;
+        };
         /** SignInRequest */
         SignInRequest: {
             /**
@@ -1244,6 +1363,13 @@ export interface components {
             level: number;
             /** Evidence */
             evidence: string;
+        };
+        /** SkillFact */
+        SkillFact: {
+            /** Name */
+            name: string;
+            /** Level */
+            level: number;
         };
         /** SkillRead */
         SkillRead: {
@@ -4747,6 +4873,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    latest_suggestions_tickets__ticket_id__assignment_suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRunRead"] | null;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suggest_assignees_tickets__ticket_id__assignment_suggestions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRunRead"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

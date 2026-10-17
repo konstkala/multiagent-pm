@@ -4529,6 +4529,169 @@
           }
         }
       }
+    },
+    "/tickets/{ticket_id}/assignment-suggestions": {
+      "get": {
+        "tags": [
+          "assignment"
+        ],
+        "summary": "Latest Suggestions",
+        "operationId": "latest_suggestions_tickets__ticket_id__assignment_suggestions_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/AssignmentRunRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Latest Suggestions Tickets  Ticket Id  Assignment Suggestions Get"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "assignment"
+        ],
+        "summary": "Suggest Assignees",
+        "description": "Ranked at once; the reasons follow from a background job (poll the GET).",
+        "operationId": "suggest_assignees_tickets__ticket_id__assignment_suggestions_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentRunRead"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4546,6 +4709,148 @@
           "project_id"
         ],
         "title": "AcceptedInvitation"
+      },
+      "AssignmentRunRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "ticket_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ticket Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AssignmentStatus"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "chosen_user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chosen User Id"
+          },
+          "chosen_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chosen Rank"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "score_ms": {
+            "type": "number",
+            "title": "Score Ms"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "llm_calls": {
+            "type": "integer",
+            "title": "Llm Calls"
+          },
+          "cost_usd": {
+            "type": "number",
+            "title": "Cost Usd"
+          },
+          "latency_ms": {
+            "type": "number",
+            "title": "Latency Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ticket_id",
+          "status",
+          "candidates",
+          "error_code",
+          "chosen_user_id",
+          "chosen_rank",
+          "decided_at",
+          "score_ms",
+          "model",
+          "llm_calls",
+          "cost_usd",
+          "latency_ms",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "AssignmentRunRead"
+      },
+      "AssignmentStatus": {
+        "type": "string",
+        "enum": [
+          "explaining",
+          "ready",
+          "explain_failed"
+        ],
+        "title": "AssignmentStatus"
       },
       "AttachmentRead": {
         "properties": {
@@ -4640,6 +4945,118 @@
           "file"
         ],
         "title": "Body_upload_attachment_tickets__ticket_id__attachments_post"
+      },
+      "Candidate": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          },
+          "parts": {
+            "$ref": "#/components/schemas/ScoreParts"
+          },
+          "facts": {
+            "$ref": "#/components/schemas/CandidateFacts"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name",
+          "rank",
+          "score",
+          "parts",
+          "facts",
+          "reason"
+        ],
+        "title": "Candidate",
+        "description": "Stored as JSON in the run and returned as is."
+      },
+      "CandidateFacts": {
+        "properties": {
+          "has_profile": {
+            "type": "boolean",
+            "title": "Has Profile"
+          },
+          "matched_skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillFact"
+            },
+            "type": "array",
+            "title": "Matched Skills"
+          },
+          "strongest_skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillFact"
+            },
+            "type": "array",
+            "title": "Strongest Skills"
+          },
+          "profile_match": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Match"
+          },
+          "similar_done": {
+            "type": "integer",
+            "title": "Similar Done"
+          },
+          "open_points": {
+            "type": "integer",
+            "title": "Open Points"
+          },
+          "team_avg_points": {
+            "type": "number",
+            "title": "Team Avg Points"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "has_profile",
+          "matched_skills",
+          "strongest_skills",
+          "profile_match",
+          "similar_done",
+          "open_points",
+          "team_avg_points",
+          "overdue"
+        ],
+        "title": "CandidateFacts",
+        "description": "The evidence behind a score, shown to the manager and given to the agent."
       },
       "CommentRead": {
         "properties": {
@@ -5492,6 +5909,29 @@
         ],
         "title": "RoleUpdate"
       },
+      "ScoreParts": {
+        "properties": {
+          "skill": {
+            "type": "number",
+            "title": "Skill"
+          },
+          "history": {
+            "type": "number",
+            "title": "History"
+          },
+          "availability": {
+            "type": "number",
+            "title": "Availability"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill",
+          "history",
+          "availability"
+        ],
+        "title": "ScoreParts"
+      },
       "SignInRequest": {
         "properties": {
           "email": {
@@ -5597,6 +6037,24 @@
           "evidence"
         ],
         "title": "SkillDraftRead"
+      },
+      "SkillFact": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "level"
+        ],
+        "title": "SkillFact"
       },
       "SkillRead": {
         "properties": {

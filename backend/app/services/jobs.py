@@ -10,13 +10,17 @@ from app.db.models import Job, JobStatus
 
 STALE_AFTER = timedelta(minutes=10)  # a running job this old belongs to a worker that died
 BACKOFF = timedelta(seconds=30)  # 30 s, 60 s, 120 s, ...
+INTERACTIVE = 0  # someone is watching the screen for the result
+BACKGROUND = 10
 
 
-def enqueue(session: AsyncSession, kind: str, payload: dict[str, Any]) -> Job:
+def enqueue(
+    session: AsyncSession, kind: str, payload: dict[str, Any], *, priority: int = BACKGROUND
+) -> Job:
     """Adds a job to the caller's transaction: it exists only if the caller's change commits."""
     # One clock for all queue times: the app's. The database clock (server default) can be a
     # little ahead, which made brand-new jobs look "not due yet" to claim().
-    job = Job(kind=kind, payload=payload, run_after=datetime.now(UTC))
+    job = Job(kind=kind, payload=payload, run_after=datetime.now(UTC), priority=priority)
     session.add(job)
     return job
 
@@ -39,7 +43,8 @@ async def claim(session: AsyncSession) -> Job | None:
     next_id = (
         select(Job.id)
         .where(runnable)
-        .order_by(Job.run_after)
+        # Without priority, a click waited behind every queued triage (14 s instead of 2 s).
+        .order_by(Job.priority, Job.run_after)
         .limit(1)
         .with_for_update(skip_locked=True)
         .scalar_subquery()

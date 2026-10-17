@@ -98,6 +98,11 @@ A few words each. New technologies are added as they appear.
 | **Confidence threshold (auto-apply)** | The model rates how sure it is; code acts alone only above a cut-off | Triage sets category and labels by itself at ≥ 0.7 and only on empty fields; the rest waits for a manager |
 | **Clarifying question** | The agent asks once instead of guessing, then runs again with the answer | Better sizing for vague tickets, for the cost of one more cheap call |
 | **Clock skew** | Two machines (or a container and its host) disagree on the time | Our DB clock was 0.3 s ahead, so new jobs looked "not due yet". Fix: take all queue times from one clock |
+| **Scoring vs generation** | Code computes the decision; the LLM only puts it into words | Assignment ranking is testable, explainable and free; Haiku writes the reasons |
+| **Pseudonymisation** | Replace who someone is with a stand-in (A, B, C) before sharing data | The model never sees names, so it can't leak them or be swayed by them |
+| **Hit rate (top-k accuracy)** | How often the person picks the agent's first choice (top-1) or one of its 3 (top-3) | Recorded on every assignment: the honest test of whether the agent helps |
+| **Head-of-line blocking** | A quick task stuck behind slow ones in a single FIFO line | A click waited 14 s behind triage jobs; job priority brought it to 4 s |
+| **Job priority** | Queue order by urgency first, then age (lower runs first, like Unix `nice`) | Interactive jobs beat background work |
 
 ### Tickets and files
 

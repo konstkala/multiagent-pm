@@ -11,6 +11,7 @@ import { useUpdateTicket } from "@/lib/mutations";
 import { useMe, useMembers, useProject, useTicket } from "@/lib/queries";
 import { ticketKey } from "@/lib/tickets";
 
+import { AssignmentPanel } from "./assignment-panel";
 import { Attachments } from "./attachments";
 import { Comments } from "./comments";
 import { Relations } from "./relations";
@@ -64,6 +65,7 @@ export function TicketDetail() {
         </div>
         <div className="flex flex-col gap-6">
           <Sidebar context={context} />
+          {context.isManager ? <AssignmentPanel context={context} /> : null}
           <SimilarTickets context={context} />
         </div>
       </div>

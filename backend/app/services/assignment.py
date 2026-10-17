@@ -85,7 +85,7 @@ async def suggest(
     )
     session.add(run)
     await session.flush()
-    jobs.enqueue(session, JOB_KIND, {"run_id": str(run.id)})
+    jobs.enqueue(session, JOB_KIND, {"run_id": str(run.id)}, priority=jobs.INTERACTIVE)
     await session.commit()
     logger.info(
         "audit.assignment.requested",

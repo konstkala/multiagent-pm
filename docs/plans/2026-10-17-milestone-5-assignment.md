@@ -57,3 +57,12 @@ Managers only, right column under the sidebar card: "Suggest assignee" → 3 row
 2. `uv run pytest -m llm tests/test_assignment_agent.py` → real cost and reason quality.
 3. `docker compose up -d --build`, then `smoke_m5.py` through the web proxy: manager + 3 employees with profiles (payments expert, frontend dev, overloaded payments dev), past done tickets → suggestion for a payments bug ranks the expert first and the overloaded dev lower; reasons arrive; assigning records rank 1; employee gets 403; logs contain no names or skills.
 4. Report $/click and latency (score ms + reasons s).
+
+## Result (2026-10-17)
+Both steps are done. End-to-end smoke through the containers: 11/11 passed, with real bge embeddings and Haiku 5.5.
+- Ranking: first response **108 ms** (scoring 79 ms, including embedding 3 profiles). The payments expert with past work came first, and the swamped payments developer (24 points, 3 overdue) scored low despite the skill.
+- Reasons: **$0.00012**, Haiku 1.6–2.1 s. They stay factual and name real drawbacks.
+- Found in the smoke run: the reasons took 14.3 s because the job queued behind 6 triage jobs (head-of-line blocking). Fixed with job priority (ADR 0018): now 4.2 s.
+- Change from the plan: migrations split into 0012 (profile embeddings) and 0013 (assignment runs), one concern each, plus 0014 (job priority).
+- Logs: ids, counts and timings only. No names, skills or ticket text.
+

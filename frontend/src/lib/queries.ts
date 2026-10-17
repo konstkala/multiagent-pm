@@ -34,6 +34,7 @@ export const keys = {
   links: (ticketId: string) => ["tickets", ticketId, "links"] as const,
   similar: (ticketId: string) => ["tickets", ticketId, "similar"] as const,
   triage: (ticketId: string) => ["tickets", ticketId, "triage"] as const,
+  assignment: (ticketId: string) => ["tickets", ticketId, "assignment"] as const,
 };
 
 export function useMe() {
@@ -140,6 +141,20 @@ export function useTriage(ticketId: string) {
     queryFn: () =>
       call(api.GET("/tickets/{ticket_id}/triage", { params: { path: { ticket_id: ticketId } } })),
     refetchInterval: (query) => (query.state.data?.status === "queued" ? 2000 : false),
+  });
+}
+
+/** Managers only. The latest suggestion run, or null. Polls every 2 s while reasons are written. */
+export function useAssignmentSuggestions(ticketId: string) {
+  return useQuery({
+    queryKey: keys.assignment(ticketId),
+    queryFn: () =>
+      call(
+        api.GET("/tickets/{ticket_id}/assignment-suggestions", {
+          params: { path: { ticket_id: ticketId } },
+        }),
+      ),
+    refetchInterval: (query) => (query.state.data?.status === "explaining" ? 2000 : false),
   });
 }
 

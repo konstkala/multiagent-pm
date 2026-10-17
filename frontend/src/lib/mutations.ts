@@ -18,10 +18,14 @@ export function useUpdateTicket(ticket: Pick<Ticket, "id" | "project_id">) {
           body: changes,
         }),
       ),
-    onSuccess: async (updated) => {
+    onSuccess: async (updated, changes) => {
       queryClient.setQueryData(keys.ticket(ticket.id), updated);
       await queryClient.invalidateQueries({ queryKey: keys.ticketLists(ticket.project_id) });
       await queryClient.invalidateQueries({ queryKey: keys.similar(ticket.id) });
+      // Assigning records the pick on the latest suggestion run (the agent's hit rate).
+      if (changes.assignee_id !== undefined) {
+        await queryClient.invalidateQueries({ queryKey: keys.assignment(ticket.id) });
+      }
     },
   });
 }
