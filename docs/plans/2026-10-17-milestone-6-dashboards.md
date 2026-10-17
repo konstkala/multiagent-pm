@@ -59,3 +59,13 @@ Service `backend/app/services/dashboards.py`, plain SQL aggregates computed on r
 2. `alembic upgrade head`, downgrade/upgrade round-trip, `alembic check`; backfill on the dev DB (existing smoke data) gives every ticket a `created` event.
 3. `docker compose up -d --build`, then `smoke_m6.py` through the web proxy: create tickets, move them through statuses, accept a triage with an edit, pick a suggested assignee → dashboard numbers, agent metrics (one edited field, hit rate 100%), my work and calendar match; employee can't see agent metrics or others' workload.
 4. Report dashboard p95 over 20 requests (target ≤ 300 ms at this data size).
+
+## Result (2026-10-17)
+Done in four commits (6a–6d). End-to-end smoke through the containers: 16/16 passed, with real Haiku for triage and assignment.
+- Project dashboard p95 **22 ms** through the web proxy (p50 15 ms; server side at most 18 ms), against a 300 ms target.
+- AI metrics matched the scripted manager decisions exactly: edited priority, kept category, left out labels and points, 100% top-1 hit.
+- $0 added: no LLM calls. The smoke run itself spent $0.00075 (4 triages, 1 assignment).
+- Bug caught by a test: a LEFT JOIN row for someone with no open tickets counted as 3 "unpointed" points. Fixed with `FILTER (WHERE t.id IS NOT NULL)`.
+- Changes from the plan: the calendar filters by project in the browser (one API parameter fewer); migration 0017 adds `triage_runs.accepted`.
+- Logs: ids, counts and durations only.
+

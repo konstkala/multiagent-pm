@@ -15,13 +15,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents.assignment.scoring import UNPOINTED
 from app.core.errors import InvalidRequestError
 from app.core.logging import log_fields
-from app.db.models import ProjectRole, TicketStatus, User
+from app.db.models import ProjectRole, TicketPriority, TicketStatus, User
 from app.schemas.dashboards import (
+    CalendarTicket,
     Duration,
+    MyDashboard,
+    MyTicket,
     OpenAge,
     ProjectDashboard,
     StatusCount,
     WeekCounts,
+    WeekDone,
     WorkloadRow,
 )
 from app.services import access
@@ -30,19 +34,23 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_DAYS = 30
 MAX_DAYS = 366
+CALENDAR_MAX_DAYS = 62  # a month view with the days around it
+CALENDAR_LIMIT = 500
+DUE_SOON_DAYS = 7
+MY_LIST_LIMIT = 20
 EXACT_HISTORY_SINCE = date(2026, 10, 17)  # migration 0016 rebuilt everything before this
 _OPEN = ("todo", "in_progress", "in_review")
 _SECONDS_PER_DAY = 86_400
 
 
-def date_range(start: date | None, end: date | None) -> tuple[date, date]:
+def date_range(start: date | None, end: date | None, max_days: int = MAX_DAYS) -> tuple[date, date]:
     """Inclusive days; the last 30 by default."""
     end = end or datetime.now(UTC).date()
     start = start or end - timedelta(days=DEFAULT_DAYS - 1)
     if start > end:
         raise InvalidRequestError("The start date must be on or before the end date")
-    if (end - start).days + 1 > MAX_DAYS:
-        raise InvalidRequestError(f"Choose a range of at most {MAX_DAYS} days")
+    if (end - start).days + 1 > max_days:
+        raise InvalidRequestError(f"Choose a range of at most {max_days} days")
     return start, end
 
 
@@ -86,6 +94,126 @@ async def project_dashboard(
     return dashboard
 
 
+async def my_dashboard(session: AsyncSession, actor: User, start: date, end: date) -> MyDashboard:
+    """Your own work across every project you're in."""
+    started = time.perf_counter()
+    today = datetime.now(UTC).date()
+    params: dict[str, Any] = {
+        "me": actor.id,
+        "open": list(_OPEN),
+        "today": today,
+        "soon": today + timedelta(days=DUE_SOON_DAYS),
+        "since": datetime.combine(start, day_start.min, UTC),
+        "until": datetime.combine(end + timedelta(days=1), day_start.min, UTC),
+        "unpointed": UNPOINTED,
+        "limit": MY_LIST_LIMIT,
+    }
+    open_rows = await session.execute(
+        text(
+            "SELECT status, count(*) AS n, sum(coalesce(story_points, :unpointed)) AS points"
+            " FROM tickets WHERE assignee_id = :me AND status = ANY(:open) GROUP BY status"
+        ),
+        params,
+    )
+    open_counts = {row.status: (int(row.n), int(row.points)) for row in open_rows}
+    done_rows = await session.execute(
+        text(
+            "SELECT date_trunc('week', e.created_at AT TIME ZONE 'UTC')::date AS week,"
+            " count(*) AS n FROM ticket_events e JOIN tickets t ON t.id = e.ticket_id"
+            " WHERE t.assignee_id = :me AND e.kind = 'status' AND e.to_value = 'done'"
+            " AND e.created_at >= :since AND e.created_at < :until GROUP BY week"
+        ),
+        params,
+    )
+    done = {row.week: int(row.n) for row in done_rows}
+    weeks = [WeekDone(week=monday, done=done.get(monday, 0)) for monday in _mondays(start, end)]
+    dashboard = MyDashboard(
+        start=start,
+        end=end,
+        open_by_status=[
+            StatusCount(status=TicketStatus(s), count=open_counts.get(s, (0, 0))[0]) for s in _OPEN
+        ],
+        open_points=sum(points for _, points in open_counts.values()),
+        overdue=await _my_tickets(session, params, "t.due_date < :today"),
+        due_soon=await _my_tickets(session, params, "t.due_date >= :today AND t.due_date <= :soon"),
+        weeks=weeks,
+        done=sum(w.done for w in weeks),
+    )
+    logger.info(
+        "dashboard.mine_computed",
+        extra=log_fields(duration_ms=round((time.perf_counter() - started) * 1000, 1)),
+    )
+    return dashboard
+
+
+async def calendar(
+    session: AsyncSession, actor: User, start: date, end: date, *, mine: bool
+) -> list[CalendarTicket]:
+    """Tickets due in the range, from every project you're a member of."""
+    rows = await session.execute(
+        text(
+            "SELECT t.id, t.project_id, p.key || '-' || t.number AS key, t.title, t.status,"
+            " t.due_date, t.assignee_id FROM tickets t JOIN projects p ON p.id = t.project_id"
+            " JOIN project_members m ON m.project_id = t.project_id AND m.user_id = :me"
+            " WHERE t.due_date BETWEEN :start AND :end"
+            " AND (NOT :mine OR t.assignee_id = :me)"
+            " ORDER BY t.due_date, p.key, t.number LIMIT :limit"
+        ),
+        {"me": actor.id, "start": start, "end": end, "mine": mine, "limit": CALENDAR_LIMIT},
+    )
+    return [
+        CalendarTicket(
+            id=row.id,
+            project_id=row.project_id,
+            key=row.key,
+            title=row.title,
+            status=TicketStatus(row.status),
+            due_date=row.due_date,
+            assignee_id=row.assignee_id,
+        )
+        for row in rows
+    ]
+
+
+async def _my_tickets(
+    session: AsyncSession, params: dict[str, Any], condition: str
+) -> list[MyTicket]:
+    # `condition` is one of two fixed strings in my_dashboard, never user input.
+    rows = await session.execute(
+        text(
+            "SELECT t.id, t.project_id, p.key || '-' || t.number AS key, t.title, t.status,"
+            " t.priority, t.story_points, t.due_date FROM tickets t"
+            " JOIN projects p ON p.id = t.project_id"
+            " WHERE t.assignee_id = :me AND t.status = ANY(:open) AND "
+            + condition
+            + " ORDER BY t.due_date, p.key, t.number LIMIT :limit"
+        ),
+        params,
+    )
+    return [
+        MyTicket(
+            id=row.id,
+            project_id=row.project_id,
+            key=row.key,
+            title=row.title,
+            status=TicketStatus(row.status),
+            priority=TicketPriority(row.priority) if row.priority else None,
+            story_points=row.story_points,
+            due_date=row.due_date,
+        )
+        for row in rows
+    ]
+
+
+def _mondays(start: date, end: date) -> list[date]:
+    monday = start - timedelta(days=start.weekday())
+    mondays: list[date] = []
+    while monday <= end:
+        mondays.append(monday)
+        monday += timedelta(days=7)
+    return mondays
+
+
 async def _weeks(
     session: AsyncSession, params: dict[str, Any], start: date, end: date
 ) -> list[WeekCounts]:
@@ -100,12 +228,10 @@ async def _weeks(
         params,
     )
     counts = {row.week: (row.created, row.done) for row in rows}
-    monday = start - timedelta(days=start.weekday())
     weeks: list[WeekCounts] = []
-    while monday <= end:  # every week shows, including empty ones
+    for monday in _mondays(start, end):  # every week shows, including empty ones
         created, done = counts.get(monday, (0, 0))
         weeks.append(WeekCounts(week=monday, created=created, done=done))
-        monday += timedelta(days=7)
     return weeks
 
 

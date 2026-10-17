@@ -26,9 +26,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex flex-1 flex-col">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <Link href="/projects" className="font-semibold tracking-tight">
-            Multiagent PM
-          </Link>
+          <nav aria-label="Main" className="flex items-center gap-4 text-sm">
+            <Link href="/projects" className="font-semibold tracking-tight">
+              Multiagent PM
+            </Link>
+            <Link href="/projects" className="text-muted hover:text-foreground">
+              Projects
+            </Link>
+            <Link href="/me" className="text-muted hover:text-foreground">
+              My work
+            </Link>
+            <Link href="/calendar" className="text-muted hover:text-foreground">
+              Calendar
+            </Link>
+          </nav>
           {me.data ? (
             <div className="flex items-center gap-3 text-sm">
               <span className="text-muted">{me.data.display_name}</span>

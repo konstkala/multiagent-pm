@@ -166,3 +166,58 @@ async def test_dashboard_logs_timing_not_content(
     assert fields["range_days"] == 30 and fields["duration_ms"] >= 0
     logged = json.dumps([r.__dict__.get("fields", {}) for r in caplog.records], default=str)
     assert "Secret" not in logged
+
+
+# --- my work and the calendar ----------------------------------------------------------------
+
+
+async def test_my_dashboard_lists_only_my_open_work(
+    manager: AsyncClient, employee: AsyncClient, project_id: str, db_session: AsyncSession
+) -> None:
+    emp = (await employee.get("/auth/me")).json()["id"]
+    late = await create(
+        manager, project_id, assignee_id=emp, due_date=(TODAY - timedelta(days=2)).isoformat()
+    )
+    soon = await create(
+        manager,
+        project_id,
+        assignee_id=emp,
+        story_points=5,
+        due_date=(TODAY + timedelta(days=3)).isoformat(),
+    )
+    finished = await create(manager, project_id, assignee_id=emp)
+    await create(manager, project_id)  # nobody's
+    await manager.patch(f"/tickets/{finished}", json={"status": "done"})
+
+    mine = (await employee.get("/me/dashboard")).json()
+
+    assert [t["id"] for t in mine["overdue"]] == [late]
+    assert [t["id"] for t in mine["due_soon"]] == [soon]
+    assert mine["overdue"][0]["key"] == "PM-1"
+    assert mine["open_points"] == 3 + 5
+    assert {s["status"]: s["count"] for s in mine["open_by_status"]}["todo"] == 2
+    assert mine["done"] == 1
+
+
+async def test_calendar_shows_due_tickets_from_my_projects_only(
+    manager: AsyncClient, employee: AsyncClient, project_id: str, login: Any
+) -> None:
+    emp = (await employee.get("/auth/me")).json()["id"]
+    in_range = (TODAY + timedelta(days=5)).isoformat()
+    mine = await create(manager, project_id, assignee_id=emp, due_date=in_range)
+    theirs = await create(manager, project_id, due_date=in_range)
+    await create(manager, project_id, due_date=(TODAY + timedelta(days=90)).isoformat())
+    stranger = await login("stranger")
+    month = {"start": TODAY.isoformat(), "end": (TODAY + timedelta(days=30)).isoformat()}
+
+    everything = (await employee.get("/calendar", params=month)).json()
+    only_mine = (await employee.get("/calendar", params=month | {"mine": True})).json()
+    too_long = await employee.get(
+        "/calendar",
+        params={"start": TODAY.isoformat(), "end": (TODAY + timedelta(days=90)).isoformat()},
+    )
+
+    assert {t["id"] for t in everything} == {mine, theirs}
+    assert [t["id"] for t in only_mine] == [mine]
+    assert (await stranger.get("/calendar", params=month)).json() == []
+    assert too_long.status_code == 422

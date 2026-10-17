@@ -40,6 +40,9 @@ export const keys = {
     ["projects", projectId, "dashboard", range] as const,
   agentMetrics: (projectId: string, range: DateRange) =>
     ["projects", projectId, "agent-metrics", range] as const,
+  // Under "me": signing out clears everything anyway, and nothing else shares these.
+  myDashboard: (range: DateRange) => ["me", "dashboard", range] as const,
+  calendar: (range: DateRange, mine: boolean) => ["me", "calendar", range, mine] as const,
 };
 
 export function useMe() {
@@ -186,6 +189,22 @@ export function useAgentMetrics(projectId: string, range: DateRange) {
           params: { path: { project_id: projectId }, query: range },
         }),
       ),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useMyDashboard(range: DateRange) {
+  return useQuery({
+    queryKey: keys.myDashboard(range),
+    queryFn: () => call(api.GET("/me/dashboard", { params: { query: range } })),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useCalendar(range: DateRange, mine: boolean) {
+  return useQuery({
+    queryKey: keys.calendar(range, mine),
+    queryFn: () => call(api.GET("/calendar", { params: { query: { ...range, mine } } })),
     placeholderData: (previous) => previous,
   });
 }

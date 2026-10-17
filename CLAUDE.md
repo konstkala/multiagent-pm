@@ -14,7 +14,7 @@ Also a learning project: it should make me an expert **DevOps engineer** and **A
   - `claude-sonnet-5-5`: orchestrator, planning, agentic tool loops
 - **Embeddings**: fastembed `BAAI/bge-small-en-v1.5`, run locally on CPU
 - **Observability**: Langfuse (traces, tokens, cost per run)
-- **Frontend**: Next.js 16 + React 19 + TypeScript, Tailwind CSS 4, TanStack Query. API client generated from FastAPI's OpenAPI schema; `/api` proxied to FastAPI
+- **Frontend**: Next.js 16 + React 19 + TypeScript, Tailwind CSS 4, TanStack Query, Recharts. API client generated from FastAPI's OpenAPI schema; `/api` proxied to FastAPI
 
 ## Layout (planned)
 ```
@@ -78,6 +78,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 11. Assignment agent recommends top 3; manager picks (0013). Story points + due dates (0014).
 12. Attachments in S3-compatible storage via boto3; SeaweedFS locally, S3/R2 in production (0015).
 13. Assignment scoring: lazy profile embeddings, the LLM sees letters + facts only, every pick recorded for a hit rate (0017). Job priority: interactive before background (0018).
+14. Ticket history in a `ticket_events` table; KPIs are SQL computed on request, rollups only once measured slow (0019).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.

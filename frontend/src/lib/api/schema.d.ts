@@ -859,6 +859,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Dashboard
+         * @description Your own work across your projects (default range: the last 30 days).
+         */
+        get: operations["my_dashboard_me_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Calendar
+         * @description Tickets due between start and end (at most 62 days and 500 tickets) in your projects.
+         */
+        get: operations["calendar_calendar_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -996,6 +1036,31 @@ export interface components {
         Body_upload_attachment_tickets__ticket_id__attachments_post: {
             /** File */
             file: string;
+        };
+        /** CalendarTicket */
+        CalendarTicket: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            status: components["schemas"]["TicketStatus"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Assignee Id */
+            assignee_id: string | null;
         };
         /**
          * Candidate
@@ -1290,6 +1355,57 @@ export interface components {
         MessageResponse: {
             /** Message */
             message: string;
+        };
+        /**
+         * MyDashboard
+         * @description Your own work across every project you are in.
+         */
+        MyDashboard: {
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Open By Status */
+            open_by_status: components["schemas"]["StatusCount"][];
+            /** Open Points */
+            open_points: number;
+            /** Overdue */
+            overdue: components["schemas"]["MyTicket"][];
+            /** Due Soon */
+            due_soon: components["schemas"]["MyTicket"][];
+            /** Weeks */
+            weeks: components["schemas"]["WeekDone"][];
+            /** Done */
+            done: number;
+        };
+        /** MyTicket */
+        MyTicket: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            status: components["schemas"]["TicketStatus"];
+            priority: components["schemas"]["TicketPriority"] | null;
+            /** Story Points */
+            story_points: number | null;
+            /** Due Date */
+            due_date: string | null;
         };
         /** OpenAge */
         OpenAge: {
@@ -1830,6 +1946,16 @@ export interface components {
             week: string;
             /** Created */
             created: number;
+            /** Done */
+            done: number;
+        };
+        /** WeekDone */
+        WeekDone: {
+            /**
+             * Week
+             * Format: date
+             */
+            week: string;
             /** Done */
             done: number;
         };
@@ -5271,6 +5397,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentMetrics"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    my_dashboard_me_dashboard_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyDashboard"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    calendar_calendar_get: {
+        parameters: {
+            query: {
+                start: string;
+                end: string;
+                mine?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarTicket"][];
                 };
             };
             /** @description Forbidden */

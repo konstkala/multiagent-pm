@@ -103,6 +103,11 @@ A few words each. New technologies are added as they appear.
 | **Hit rate (top-k accuracy)** | How often the person picks the agent's first choice (top-1) or one of its 3 (top-3) | Recorded on every assignment: the honest test of whether the agent helps |
 | **Head-of-line blocking** | A quick task stuck behind slow ones in a single FIFO line | A click waited 14 s behind triage jobs; job priority brought it to 4 s |
 | **Job priority** | Queue order by urgency first, then age (lower runs first, like Unix `nice`) | Interactive jobs beat background work |
+| **Event history (append-only)** | Store each change as a new row instead of overwriting a field | `ticket_events` gives exact cycle times and survives reopening |
+| **Backfill (data migration)** | A migration that fills new tables from existing data, kept separate from schema changes | Old tickets got approximate history; the dashboard says from when it's exact |
+| **Cycle time / lead time / throughput** | Start → done / created → done / done per week | The core flow KPIs of agile teams (Kanban) |
+| **Percentiles (p50, p90, p95)** | The value below which 50 / 90 / 95% of cases fall | Medians resist outliers; p90/p95 show the slow tail people actually feel |
+| **Recharts** | React chart library built on SVG | Bar charts with tooltips for dashboards, restyled later |
 
 ### Tickets and files
 

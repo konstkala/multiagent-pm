@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import BaseModel
 
-from app.db.models import TicketStatus
+from app.db.models import TicketPriority, TicketStatus
 
 
 class WeekCounts(BaseModel):
@@ -53,3 +53,42 @@ class ProjectDashboard(BaseModel):
     open_age: OpenAge
     # Everyone for managers; only your own row for employees.
     workload: list[WorkloadRow]
+
+
+class MyTicket(BaseModel):
+    id: uuid.UUID
+    project_id: uuid.UUID
+    key: str  # PM-42
+    title: str
+    status: TicketStatus
+    priority: TicketPriority | None
+    story_points: int | None
+    due_date: date | None
+
+
+class WeekDone(BaseModel):
+    week: date
+    done: int
+
+
+class MyDashboard(BaseModel):
+    """Your own work across every project you are in."""
+
+    start: date
+    end: date
+    open_by_status: list[StatusCount]
+    open_points: int
+    overdue: list[MyTicket]
+    due_soon: list[MyTicket]  # the next 7 days
+    weeks: list[WeekDone]  # your tickets moved to Done
+    done: int
+
+
+class CalendarTicket(BaseModel):
+    id: uuid.UUID
+    project_id: uuid.UUID
+    key: str
+    title: str
+    status: TicketStatus
+    due_date: date
+    assignee_id: uuid.UUID | None

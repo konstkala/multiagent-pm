@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** Milestones 1–5 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, and three AI agents, each with a manager making the final call: CV → skills profile, ticket triage, and assignee suggestions. Dashboards and the calendar come next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
+> **Status: early development.** Milestones 1–6 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, three AI agents (CV → skills profile, ticket triage, assignee suggestions; a manager makes every final call), and dashboards: team KPIs, how well the agents do, your own work, and a calendar. Deployment comes next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -54,6 +54,8 @@ The triage agent runs there too. A new ticket queues a run; the worker gathers s
 
 The assignment agent suggests who should take a ticket. Code ranks the project's members, for free and in about 80 ms: skill fit (ticket vs profile embedding, plus labels that match a named skill), similar tickets they finished, and availability (open points vs the team average, minus overdue work). The top 3 appear at once, each with its facts. One Haiku call then writes a reason for each one, seeing **letters and facts only, never names**. The manager assigns as usual, and every pick is recorded with its rank, which gives the agent's hit rate. Measured: **$0.00012 per click, reasons in ~4 s**. A job priority stops the click waiting behind background triage. Details: [plan](docs/plans/2026-10-17-milestone-5-assignment.md), [ADR 0017](docs/adr/0017-assignment-scoring.md), [ADR 0018](docs/adr/0018-job-priority.md).
 
+Dashboards are computed on request with plain SQL over a `ticket_events` history table (status and assignee changes, written in the same transaction as the change). The project dashboard has a p95 of **22 ms** through the web proxy. Managers also see how the agents perform, from data the app records anyway: per triage field, how often managers kept, edited or dropped the suggestion; the assignment hit rate; and $ and latency per agent. No LLM calls: **$0**. Details: [plan](docs/plans/2026-10-17-milestone-6-dashboards.md), [ADR 0019](docs/adr/0019-ticket-events-and-kpis.md).
+
 ## API
 
 | Method | Path | Purpose |
@@ -83,6 +85,9 @@ The assignment agent suggests who should take a ticket. Code ranks the project's
 | GET, POST | `/tickets/{id}/triage` | Latest triage run (members); re-run: 202 (managers) |
 | POST | `/triage-runs/{id}/answer` · `/accept` · `/dismiss` | Answer the agent's question, accept the suggestion with edits, or dismiss (managers) |
 | GET, POST | `/tickets/{id}/assignment-suggestions` | Latest suggestions; ask for new ones: 202 with the ranked top 3, reasons follow (managers) |
+| GET | `/projects/{id}/dashboard` | Created and done per week, cycle and lead time (median, p90), open by status and age, overdue, workload (`start`, `end`) |
+| GET | `/projects/{id}/agent-metrics` | Per agent: what managers kept, edited or left out, assignment hit rate, $ and latency p50/p95 (managers) |
+| GET | `/me/dashboard` · `/calendar` | Your open work, due soon, overdue, done per week; tickets due in a range (`mine` to filter) |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
 Everything except `/health` and `/auth/*` requires sign-in, and people outside a project get 404 for it. Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
@@ -167,10 +172,10 @@ docs/
 | 3 | Local embeddings and similar-ticket search | Done |
 | M4 | **Triage agent**: category, labels, priority, points, duplicates; one clarifying question; manager approval | Done |
 | M5 | **Assignment agent**: top 3 by skills, past work and workload; reasons from facts only; picks recorded | Done |
-| M6 | KPI dashboards (incl. agent hit rate), employee dashboard, calendar | Next |
-| 5 | Approval API and an evaluation set for accuracy and cost | Planned |
-| 6 | Next.js frontend | Planned |
-| 7 | CI/CD, cloud deployment with Terraform, tracing and alerts | Planned |
+| M6 | **Dashboards**: ticket history, team KPIs, AI agent metrics (acceptance per field, hit rate, $, p95), my work, calendar | Done |
+| 5 | Approval API; evaluation set from recorded manager decisions | Approval API done; eval set planned |
+| 6 | Next.js frontend | Built across M1–M6; design pass pending |
+| 7 | CI/CD, cloud deployment with Terraform, tracing and alerts | Next |
 | 8 | Kubernetes (local cluster, Helm, GitOps) | Planned |
 
 More: [CLAUDE.md](CLAUDE.md) (project conventions) · [docs/learning/roadmap.md](docs/learning/roadmap.md) · [docs/adr/](docs/adr/)
