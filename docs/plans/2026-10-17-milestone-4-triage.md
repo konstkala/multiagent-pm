@@ -21,5 +21,12 @@ Parent: [product plan v1](2026-10-16-product-v1.md). Supersedes the LangGraph de
 Project members see the latest run on a ticket. Only managers answer, accept (with edits), dismiss or re-run.
 
 ## Steps (commit after each)
-- 4a Data model, agent, worker job, API, tests (fake Claude) + one live run
-- 4b Ticket screen: triage panel (status, question and answer, suggestion with edits, cost), re-run
+- 4a Data model, agent, worker job, API, tests (fake Claude) + one live run. **Done**
+- 4b Ticket screen: triage panel (status, question and answer, suggestion with edits, cost), re-run. **Done**
+
+## Result (2026-10-17)
+End-to-end smoke run through the containers: 19/19 checks passed. Measured on Haiku 5.5:
+- One-call triage: **$0.0001, ~2 s** (5x under the estimate: the prompt and ticket are short).
+- With a question and answer: two calls, $0.0002, 4.5 s in total.
+- The agent found the planted duplicate, reused the project's labels, and asked a sensible question on a vague ticket ("Make it faster").
+- Logs carry ids, confidences and cost only: no ticket text, no emails.

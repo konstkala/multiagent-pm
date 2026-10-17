@@ -21,6 +21,7 @@ export type Invitation = Schemas["InvitationRead"];
 export type Person = Schemas["PersonRead"];
 export type Profile = Schemas["ProfileRead"];
 export type CvImport = Schemas["CvImportRead"];
+export type TriageRun = Schemas["TriageRunRead"];
 
 /** An error response from the API, in its one standard shape. */
 export class ApiError extends Error {

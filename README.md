@@ -4,7 +4,7 @@ Project management run by a team of AI agents. The first workflow is **ticket tr
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
-> **Status: early development.** Milestones 1–3 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, and the first AI agent (CV → skills profile, reviewed by a manager). Ticket triage and assignment agents come next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
+> **Status: early development.** Milestones 1–4 are done: accounts (email or Google), workspaces, projects and roles, a Jira-style ticket experience, invitations, and two AI agents: CV → skills profile, and ticket triage, both reviewed by a manager. The assignment agent comes next. See the [product plan](docs/plans/2026-10-16-product-v1.md) for what's next.
 
 ## Stack
 
@@ -50,7 +50,7 @@ Client ──► FastAPI ──► services ──► PostgreSQL + pgvector
 
 Background work runs in a separate `worker` container that pulls jobs from Postgres (`SKIP LOCKED`). The first agent, CV → profile, runs there: one structured Haiku call reading the PDF directly, about $0.0007 per CV, with the CV deleted right after.
 
-Ticket triage workflow (planned; embedding and similar-ticket search already work): embed the ticket → find similar tickets → one Haiku call returns type, priority, labels, duplicate and suggested assignee with a confidence → apply labels → pause for human approval of assignee and priority → apply. Estimated cost: about $0.001–0.002 per ticket. Details: [docs/plans/](docs/plans/2026-10-16-ticket-triage-v1.md).
+The triage agent runs there too. A new ticket queues a run; the worker gathers similar tickets (pgvector), the project's labels and image attachments, and one Haiku call returns category, labels, priority, story points and a possible duplicate, each with a confidence. Category and labels apply by themselves only when the agent is confident and the field is empty; everything else waits for a manager to accept (with edits) or dismiss. If a ticket is too vague to size, the agent asks one question first. Measured: **$0.0001 and ~2 s per ticket**. Ticket text is passed as data in tagged blocks the text can't close, and code validates every field the model returns. Details: [plan](docs/plans/2026-10-17-milestone-4-triage.md), [ADR 0016](docs/adr/0016-triage-without-langgraph.md).
 
 ## API
 
@@ -78,6 +78,8 @@ Ticket triage workflow (planned; embedding and similar-ticket search already wor
 | GET | `/workspaces/{id}/people` · GET, PUT `.../people/{user}/profile` | People and profiles (managers, or yourself) |
 | POST | `/workspaces/{id}/people/{user}/cv` | Upload a PDF CV: 202, the CV agent drafts a profile in the background |
 | GET, POST | `/cv-imports/{id}` · `/approve` · `/reject` | Review the draft (with cost and latency), approve with edits or reject |
+| GET, POST | `/tickets/{id}/triage` | Latest triage run (members); re-run: 202 (managers) |
+| POST | `/triage-runs/{id}/answer` · `/accept` · `/dismiss` | Answer the agent's question, accept the suggestion with edits, or dismiss (managers) |
 | GET | `/health`, `/health/db` | Liveness, readiness |
 
 Everything except `/health` and `/auth/*` requires sign-in, and people outside a project get 404 for it. Requests that change state while signed in must send an `X-Requested-With` header (CSRF protection). Errors always look like `{"error": {"code": "...", "message": "..."}}`. Interactive docs at `/docs`.
@@ -160,7 +162,8 @@ docs/
 | M2 | Ticket workflow, sub-tasks, links, comments, attachments; list, board and detail screens | Done |
 | M3 | Invitations, employee profiles, job queue + worker, **CV agent** (Haiku reads a PDF CV, a manager reviews) | Done |
 | 3 | Local embeddings and similar-ticket search | Done |
-| 4 | Triage workflow with LangGraph, background worker, approval pause | Next |
+| M4 | **Triage agent**: category, labels, priority, points, duplicates; one clarifying question; manager approval | Done |
+| M5 | Assignment agent: best teammate by skills and workload | Next |
 | 5 | Approval API and an evaluation set for accuracy and cost | Planned |
 | 6 | Next.js frontend | Planned |
 | 7 | CI/CD, cloud deployment with Terraform, tracing and alerts | Planned |

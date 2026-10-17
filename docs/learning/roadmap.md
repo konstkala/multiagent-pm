@@ -36,8 +36,8 @@ Phases refer to [the triage v1 plan](../plans/2026-10-16-ticket-triage-v1.md).
 | [x] | Embeddings + retrieval | Local embeddings, pgvector HNSW, similarity thresholds | Phase 3 |
 | [x] | Structured output | Gateway `complete_structured()` (SDK `messages.parse`), validated Pydantic output, limits enforced in code | Milestone 3 |
 | [ ] | Prompt engineering + caching | Prompt files, stable prefix first, cache hit rate | Phase 4 |
-| [ ] | Workflows vs agents | LangGraph state, nodes, checkpoints; why triage is a workflow | Phase 4 |
-| [ ] | Human-in-the-loop | LangGraph interrupts, approval API, resume | Phase 4–5 |
+| [x] | Workflows vs agents | Triage is a workflow: fixed steps, one call. Job + DB states over LangGraph until branching pays (ADR 0016) | Milestone 4 |
+| [x] | Human-in-the-loop | Run states as the pause (`needs_answer`, `proposed`), approval API with edits, resume via a new job; LangGraph interrupts later | Milestone 3–4 |
 | [x] | Background jobs | Postgres queue with `SKIP LOCKED`, worker process, retries with backoff, graceful shutdown | Milestone 3 |
 | [ ] | Evals | Labelled set, per-field accuracy, $/run, p95; eval in CI | Phase 5 |
 | [ ] | LLM security | Prompt injection, untrusted input, tool permissions, OWASP LLM Top 10 | Phase 4+ |

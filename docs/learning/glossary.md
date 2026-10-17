@@ -95,6 +95,9 @@ A few words each. New technologies are added as they appear.
 | **Human in the loop** | A person approves before an AI result takes effect | The manager is accountable for profiles; EU rules treat CV-based decisions as high-risk |
 | **Data minimisation (GDPR)** | Keep personal data only as long as needed | The CV is deleted after reading; the draft after the decision |
 | **Correlation id** | One id on every log line of a request or job | One search shows the whole story; never overwrite it |
+| **Confidence threshold (auto-apply)** | The model rates how sure it is; code acts alone only above a cut-off | Triage sets category and labels by itself at ≥ 0.7 and only on empty fields; the rest waits for a manager |
+| **Clarifying question** | The agent asks once instead of guessing, then runs again with the answer | Better sizing for vague tickets, for the cost of one more cheap call |
+| **Clock skew** | Two machines (or a container and its host) disagree on the time | Our DB clock was 0.3 s ahead, so new jobs looked "not due yet". Fix: take all queue times from one clock |
 
 ### Tickets and files
 

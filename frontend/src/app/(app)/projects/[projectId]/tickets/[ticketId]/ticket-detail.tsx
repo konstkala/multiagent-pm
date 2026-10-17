@@ -16,6 +16,7 @@ import { Comments } from "./comments";
 import { Relations } from "./relations";
 import { Sidebar } from "./sidebar";
 import { SimilarTickets } from "./similar-tickets";
+import { TriagePanel } from "./triage-panel";
 
 export type TicketContext = {
   ticket: Ticket;
@@ -55,6 +56,7 @@ export function TicketDetail() {
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <div className="flex min-w-0 flex-col gap-6">
           <Header context={context} />
+          <TriagePanel context={context} />
           <Description context={context} />
           <Relations context={context} />
           <Attachments context={context} />
