@@ -1,6 +1,8 @@
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Literal
 
+from anthropic.types import DocumentBlockParam, ImageBlockParam, TextBlockParam
 from pydantic import BaseModel, ConfigDict
 
 Effort = Literal["low", "medium", "high", "xhigh", "max"]
@@ -28,6 +30,19 @@ class LLMResult(BaseModel):
     text: str
     model: str
     stop_reason: str
+    usage: Usage
+    cost_usd: float
+    latency_ms: float
+
+
+# What a user turn may contain: text, images and documents (e.g. a PDF).
+UserContent = TextBlockParam | DocumentBlockParam | ImageBlockParam
+
+
+@dataclass(frozen=True)
+class StructuredResult[T: BaseModel]:
+    output: T
+    model: str
     usage: Usage
     cost_usd: float
     latency_ms: float

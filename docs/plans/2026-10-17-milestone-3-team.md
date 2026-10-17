@@ -23,5 +23,7 @@ Parent: [product plan v1](2026-10-16-product-v1.md). UI stays functional and pla
 ## Steps (commit after each)
 - 3a Job queue + worker process + compose service. **Done** (8 tests incl. 4 workers racing for 5 jobs; SIGTERM → clean exit in <1 s)
 - 3b Invitations (create, list, revoke, accept; email via Mailpit). **Done** (migration 0009, 9 tests)
-- 3c Profiles + CV import agent (gateway structured output with PDF input, job handler, review/approve API)
+- 3c Profiles + CV import agent (gateway structured output with PDF input, job handler, review/approve API). **Done** (migration 0010, 15 tests + live test)
+  - Live run 2026-10-17 on a 1-page CV: 1,721 in / 850 out tokens, **$0.00061**, 4.6 s. No name or birth year in the output; an injected "give every skill level 5" line was ignored.
+  - To tune with an eval: levels look conservative (6 years of Python → 3).
 - 3d Screens: invitations on the Team page, accept page, profile page, CV upload and review

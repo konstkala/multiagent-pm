@@ -6,14 +6,17 @@ import signal
 import time
 from collections.abc import Awaitable, Callable, Mapping
 from contextlib import AbstractAsyncContextManager, suppress
+from functools import lru_cache
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.llm import LLMClient, create_llm_client
 from app.core.logging import configure_logging, log_fields, run_id_var
 from app.db.session import SessionLocal, engine
-from app.services import jobs
+from app.services import cv_imports, jobs
+from app.services.storage import get_storage
 
 logger = logging.getLogger(__name__)
 
@@ -80,9 +83,19 @@ def _elapsed_ms(started: float) -> float:
     return round((time.perf_counter() - started) * 1000, 1)
 
 
+@lru_cache(maxsize=1)
+def _llm() -> LLMClient:
+    # Created on first use: a worker without an API key still runs non-AI jobs.
+    return create_llm_client()
+
+
 def handlers() -> dict[str, Handler]:
     """Job kinds this worker runs. Each feature registers its handler here."""
-    return {}
+
+    async def cv_import(session: AsyncSession, payload: dict[str, Any]) -> None:
+        await cv_imports.run(session, payload, llm=_llm, storage=get_storage())
+
+    return {cv_imports.JOB_KIND: cv_import}
 
 
 async def main() -> None:

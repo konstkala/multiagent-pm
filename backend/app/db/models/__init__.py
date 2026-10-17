@@ -1,4 +1,5 @@
 from app.db.models.job import Job, JobStatus
+from app.db.models.profile import CvImport, CvImportStatus, EmployeeProfile, ProfileSkill
 from app.db.models.ticket import (
     STORY_POINTS,
     LinkType,
@@ -31,13 +32,17 @@ from app.db.models.workspace import (
 
 __all__ = [
     "STORY_POINTS",
+    "CvImport",
+    "CvImportStatus",
     "EmailToken",
     "EmailTokenPurpose",
+    "EmployeeProfile",
     "Job",
     "JobStatus",
     "LinkType",
     "OAuthIdentity",
     "OAuthState",
+    "ProfileSkill",
     "Project",
     "ProjectInvitation",
     "ProjectMember",
