@@ -1,6 +1,9 @@
 # Multiagent PM
 
-Project management run by a team of AI agents. The first workflow is **ticket triage**: a new ticket is classified, checked against similar tickets for duplicates, and routed, with a human approving the risky changes.
+[![CI](https://github.com/konstkala/multiagent-pm/actions/workflows/ci.yml/badge.svg)](https://github.com/konstkala/multiagent-pm/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+AI-assisted project management. Managers run projects with their teams; AI agents read CVs into skill profiles, triage new tickets (category, labels, priority, story points, duplicates) and suggest who should take each ticket. People make every consequential decision, and every agent run is measured: cost, latency, and how often managers keep what it suggested.
 
 It is also a learning project, built the way a production system would be: containers, migrations, structured logging, CI/CD, observability, and cost tracking on every LLM call.
 
@@ -114,6 +117,20 @@ SELECT * FROM alembic_version;        -- which migration is applied
 ```
 
 Or use any SQL client (DBeaver, pgAdmin, the VS Code PostgreSQL extension) with the connection details above.
+
+## How it's checked (CI)
+
+Every push and pull request runs [GitHub Actions](.github/workflows/ci.yml), at $0: there are no real LLM calls in CI, because tests use a fake Claude.
+
+| Job | What it proves |
+|---|---|
+| backend | ruff lint and format, pyright (strict), migrations apply and match the models, about 200 tests against a real Postgres + pgvector container |
+| frontend | ESLint, TypeScript, production build |
+| api-contract | the generated TypeScript client matches the API (regenerated and diffed) |
+| secrets | gitleaks scans the whole git history |
+| images | both Dockerfiles build (pull requests) |
+
+Actions are pinned to commit SHAs, and jobs get read-only permissions by default.
 
 ## Quick start
 
