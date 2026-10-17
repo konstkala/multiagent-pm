@@ -838,6 +838,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/projects/{project_id}/agent-metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Agent Metrics
+         * @description How the triage and assignment agents did: what managers kept, hit rate, $ and latency.
+         *     Managers only.
+         */
+        get: operations["project_agent_metrics_projects__project_id__agent_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -849,6 +870,48 @@ export interface components {
              * Format: uuid
              */
             project_id: string;
+        };
+        /** AgentCost */
+        AgentCost: {
+            /** Runs */
+            runs: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Cost Per Run Usd */
+            cost_per_run_usd: number | null;
+            /** Latency P50 Ms */
+            latency_p50_ms: number | null;
+            /** Latency P95 Ms */
+            latency_p95_ms: number | null;
+        };
+        /** AgentMetrics */
+        AgentMetrics: {
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            triage: components["schemas"]["TriageMetrics"];
+            assignment: components["schemas"]["AssignmentMetrics"];
+        };
+        /** AssignmentMetrics */
+        AssignmentMetrics: {
+            /** Runs */
+            runs: number;
+            /** Decided */
+            decided: number;
+            /** Top1 Rate */
+            top1_rate: number | null;
+            /** Top3 Rate */
+            top3_rate: number | null;
+            /** Score P95 Ms */
+            score_p95_ms: number | null;
+            cost: components["schemas"]["AgentCost"];
         };
         /** AssignmentRunRead */
         AssignmentRunRead: {
@@ -1081,6 +1144,20 @@ export interface components {
          */
         ErrorResponse: {
             error: components["schemas"]["ErrorBody"];
+        };
+        /**
+         * FieldAcceptance
+         * @description What managers did with one suggested field, over accepted runs.
+         */
+        FieldAcceptance: {
+            /** Field */
+            field: string;
+            /** Kept */
+            kept: number;
+            /** Edited */
+            edited: number;
+            /** Left Out */
+            left_out: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1626,6 +1703,26 @@ export interface components {
         TriageAnswer: {
             /** Answer */
             answer: string;
+        };
+        /** TriageMetrics */
+        TriageMetrics: {
+            /** Runs */
+            runs: number;
+            /** Accepted */
+            accepted: number;
+            /** Dismissed */
+            dismissed: number;
+            /** Failed */
+            failed: number;
+            /** Waiting */
+            waiting: number;
+            /** Fields */
+            fields: components["schemas"]["FieldAcceptance"][];
+            /** Auto Applied */
+            auto_applied: number;
+            /** Auto Applied Unchanged */
+            auto_applied_unchanged: number;
+            cost: components["schemas"]["AgentCost"];
         };
         /** TriageProposalRead */
         TriageProposalRead: {
@@ -5122,6 +5219,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectDashboard"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    project_agent_metrics_projects__project_id__agent_metrics_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentMetrics"];
                 };
             };
             /** @description Forbidden */

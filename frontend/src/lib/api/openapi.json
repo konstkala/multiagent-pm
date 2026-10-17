@@ -4795,6 +4795,109 @@
           }
         }
       }
+    },
+    "/projects/{project_id}/agent-metrics": {
+      "get": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Project Agent Metrics",
+        "description": "How the triage and assignment agents did: what managers kept, hit rate, $ and latency.\nManagers only.",
+        "operationId": "project_agent_metrics_projects__project_id__agent_metrics_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentMetrics"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4812,6 +4915,146 @@
           "project_id"
         ],
         "title": "AcceptedInvitation"
+      },
+      "AgentCost": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "cost_usd": {
+            "type": "number",
+            "title": "Cost Usd"
+          },
+          "cost_per_run_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Run Usd"
+          },
+          "latency_p50_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency P50 Ms"
+          },
+          "latency_p95_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency P95 Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "runs",
+          "cost_usd",
+          "cost_per_run_usd",
+          "latency_p50_ms",
+          "latency_p95_ms"
+        ],
+        "title": "AgentCost"
+      },
+      "AgentMetrics": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          },
+          "triage": {
+            "$ref": "#/components/schemas/TriageMetrics"
+          },
+          "assignment": {
+            "$ref": "#/components/schemas/AssignmentMetrics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "triage",
+          "assignment"
+        ],
+        "title": "AgentMetrics"
+      },
+      "AssignmentMetrics": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "decided": {
+            "type": "integer",
+            "title": "Decided"
+          },
+          "top1_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top1 Rate"
+          },
+          "top3_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top3 Rate"
+          },
+          "score_p95_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score P95 Ms"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/AgentCost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "runs",
+          "decided",
+          "top1_rate",
+          "top3_rate",
+          "score_p95_ms",
+          "cost"
+        ],
+        "title": "AssignmentMetrics"
       },
       "AssignmentRunRead": {
         "properties": {
@@ -5446,6 +5689,35 @@
         ],
         "title": "ErrorResponse",
         "description": "The one error shape every endpoint returns."
+      },
+      "FieldAcceptance": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "kept": {
+            "type": "integer",
+            "title": "Kept"
+          },
+          "edited": {
+            "type": "integer",
+            "title": "Edited"
+          },
+          "left_out": {
+            "type": "integer",
+            "title": "Left Out"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "kept",
+          "edited",
+          "left_out"
+        ],
+        "title": "FieldAcceptance",
+        "description": "What managers did with one suggested field, over accepted runs."
       },
       "HTTPValidationError": {
         "properties": {
@@ -6961,6 +7233,61 @@
           "answer"
         ],
         "title": "TriageAnswer"
+      },
+      "TriageMetrics": {
+        "properties": {
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted"
+          },
+          "dismissed": {
+            "type": "integer",
+            "title": "Dismissed"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "waiting": {
+            "type": "integer",
+            "title": "Waiting"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldAcceptance"
+            },
+            "type": "array",
+            "title": "Fields"
+          },
+          "auto_applied": {
+            "type": "integer",
+            "title": "Auto Applied"
+          },
+          "auto_applied_unchanged": {
+            "type": "integer",
+            "title": "Auto Applied Unchanged"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/AgentCost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "runs",
+          "accepted",
+          "dismissed",
+          "failed",
+          "waiting",
+          "fields",
+          "auto_applied",
+          "auto_applied_unchanged",
+          "cost"
+        ],
+        "title": "TriageMetrics"
       },
       "TriageProposalRead": {
         "properties": {

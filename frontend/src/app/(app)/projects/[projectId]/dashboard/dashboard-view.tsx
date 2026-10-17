@@ -10,6 +10,8 @@ import { errorText, type Schemas } from "@/lib/api/client";
 import { useProject, useProjectDashboard } from "@/lib/queries";
 import { STATUS_LABEL, formatDay } from "@/lib/tickets";
 
+import { AgentMetrics } from "./agent-metrics";
+
 type Dashboard = Schemas["ProjectDashboard"];
 
 export function DashboardView() {
@@ -26,6 +28,7 @@ export function DashboardView() {
       {dashboard.data ? (
         <TeamKpis data={dashboard.data} isManager={project.data?.role === "manager"} />
       ) : null}
+      {project.data?.role === "manager" ? <AgentMetrics projectId={projectId} range={range} /> : null}
     </div>
   );
 }

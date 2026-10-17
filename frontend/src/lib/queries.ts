@@ -38,6 +38,8 @@ export const keys = {
   assignment: (ticketId: string) => ["tickets", ticketId, "assignment"] as const,
   dashboard: (projectId: string, range: DateRange) =>
     ["projects", projectId, "dashboard", range] as const,
+  agentMetrics: (projectId: string, range: DateRange) =>
+    ["projects", projectId, "agent-metrics", range] as const,
 };
 
 export function useMe() {
@@ -171,6 +173,20 @@ export function useProjectDashboard(projectId: string, range: DateRange) {
         }),
       ),
     placeholderData: (previous) => previous, // keep the old numbers while a new range loads
+  });
+}
+
+/** Managers only: how the triage and assignment agents perform. */
+export function useAgentMetrics(projectId: string, range: DateRange) {
+  return useQuery({
+    queryKey: keys.agentMetrics(projectId, range),
+    queryFn: () =>
+      call(
+        api.GET("/projects/{project_id}/agent-metrics", {
+          params: { path: { project_id: projectId }, query: range },
+        }),
+      ),
+    placeholderData: (previous) => previous,
   });
 }
 

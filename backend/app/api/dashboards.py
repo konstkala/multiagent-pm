@@ -6,8 +6,9 @@ from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, SessionDep
 from app.api.errors import ErrorResponse
+from app.schemas.agent_metrics import AgentMetrics
 from app.schemas.dashboards import ProjectDashboard
-from app.services import dashboards
+from app.services import agent_metrics, dashboards
 
 router = APIRouter(tags=["dashboards"])
 
@@ -27,3 +28,17 @@ async def project_dashboard(
     """Team KPIs for the inclusive date range (default: the last 30 days)."""
     start, end = dashboards.date_range(start, end)
     return await dashboards.project_dashboard(session, project_id, user, start, end)
+
+
+@router.get("/projects/{project_id}/agent-metrics", responses=_ERRORS)
+async def project_agent_metrics(
+    project_id: uuid.UUID,
+    session: SessionDep,
+    user: CurrentUser,
+    start: date | None = None,
+    end: date | None = None,
+) -> AgentMetrics:
+    """How the triage and assignment agents did: what managers kept, hit rate, $ and latency.
+    Managers only."""
+    start, end = dashboards.date_range(start, end)
+    return await agent_metrics.agent_metrics(session, project_id, user, start, end)

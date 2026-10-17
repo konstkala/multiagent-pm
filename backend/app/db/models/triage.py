@@ -54,6 +54,8 @@ class TriageRun(Base):
     answer: Mapped[str | None] = mapped_column(Text)
     # Nullable: filled when the agent has proposed something.
     proposal: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    # Nullable: what the manager kept and how they edited it, once accepted (AI metrics).
+    accepted: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     auto_applied: Mapped[list[str]] = mapped_column(ARRAY(String(30)), server_default=text("'{}'"))
     attempts: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     # Nullable: only failed runs have one. A short code, never ticket text.

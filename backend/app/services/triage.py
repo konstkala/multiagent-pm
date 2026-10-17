@@ -95,6 +95,7 @@ async def accept(
     """Applies what the manager kept (possibly edited) through the normal ticket update path."""
     run = await _managed_run(session, run_id, actor, TriageStatus.PROPOSED)
     run.status = TriageStatus.APPLIED
+    run.accepted = changes.model_dump(mode="json", exclude_unset=True)
     run.decided_by = actor.id
     run.decided_at = datetime.now(UTC)
     # update_ticket checks permissions and values, writes the audit log and commits both.
