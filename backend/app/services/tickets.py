@@ -14,12 +14,13 @@ from app.db.models import (
     Ticket,
     TicketCategory,
     TicketComment,
+    TicketEventKind,
     TicketStatus,
     TriageTrigger,
     User,
 )
 from app.schemas.tickets import TicketCreate, TicketUpdate
-from app.services import access, assignment_choices, triage_queue
+from app.services import access, assignment_choices, ticket_events, triage_queue
 from app.services.embeddings import Embedder
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,11 @@ async def create_ticket(
     await _set_embedding(ticket, embedder)
     session.add(ticket)
     await session.flush()
+    ticket_events.record(session, ticket, actor, TicketEventKind.CREATED)
+    if ticket.assignee_id is not None:
+        ticket_events.record(
+            session, ticket, actor, TicketEventKind.ASSIGNEE, None, ticket.assignee_id
+        )
     # Same transaction: a ticket is never saved without its triage run, or the reverse.
     await triage_queue.enqueue(session, ticket, TriageTrigger.CREATED)
     await session.commit()
@@ -155,6 +161,7 @@ async def update_ticket(
         await assignment_choices.record_choice(session, ticket.id, changes["assignee_id"], actor)
     for name, value in changes.items():
         setattr(ticket, name, value)
+    ticket_events.record_changes(session, ticket, actor, before)
     if _TEXT_FIELDS & changes.keys():
         if embedder is None:
             raise RuntimeError("changing title or description needs an embedder")
@@ -185,8 +192,10 @@ async def return_to_manager(
         raise ForbiddenError("Only the assignee can return this ticket")
     if ticket.status in _CLOSED:
         raise InvalidRequestError("Closed tickets can't be returned")
+    before = {"status": ticket.status, "assignee_id": ticket.assignee_id}
     ticket.assignee_id = None
     ticket.status = TicketStatus.TODO
+    ticket_events.record_changes(session, ticket, actor, before)
     session.add(
         TicketComment(
             ticket_id=ticket.id, author_id=actor.id, body=f"Returned to manager: {reason}"

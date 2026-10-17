@@ -10,6 +10,7 @@ from app.api import (
     assignment,
     attachments,
     auth,
+    dashboards,
     health,
     invitations,
     people,
@@ -69,3 +70,4 @@ app.include_router(tickets.router)
 app.include_router(attachments.router)
 app.include_router(triage.router)
 app.include_router(assignment.router)
+app.include_router(dashboards.router)

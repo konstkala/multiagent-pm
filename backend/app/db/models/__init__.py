@@ -12,6 +12,7 @@ from app.db.models.ticket import (
     TicketPriority,
     TicketStatus,
 )
+from app.db.models.ticket_event import TicketEvent, TicketEventKind
 from app.db.models.triage import TriageRun, TriageStatus, TriageTrigger
 from app.db.models.user import (
     EmailToken,
@@ -56,6 +57,8 @@ __all__ = [
     "TicketAttachment",
     "TicketCategory",
     "TicketComment",
+    "TicketEvent",
+    "TicketEventKind",
     "TicketLink",
     "TicketPriority",
     "TicketStatus",
