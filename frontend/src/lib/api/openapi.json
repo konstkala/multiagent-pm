@@ -4692,6 +4692,109 @@
           }
         }
       }
+    },
+    "/projects/{project_id}/dashboard": {
+      "get": {
+        "tags": [
+          "dashboards"
+        ],
+        "summary": "Project Dashboard",
+        "description": "Team KPIs for the inclusive date range (default: the last 30 days).",
+        "operationId": "project_dashboard_projects__project_id__dashboard_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDashboard"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5261,6 +5364,44 @@
         ],
         "title": "CvImportStatus"
       },
+      "Duration": {
+        "properties": {
+          "median_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Days"
+          },
+          "p90_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P90 Days"
+          },
+          "tickets": {
+            "type": "integer",
+            "title": "Tickets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "median_days",
+          "p90_days",
+          "tickets"
+        ],
+        "title": "Duration",
+        "description": "Days, over the tickets finished in the range. None when there are none."
+      },
       "EmailRequest": {
         "properties": {
           "email": {
@@ -5590,6 +5731,29 @@
         ],
         "title": "MessageResponse"
       },
+      "OpenAge": {
+        "properties": {
+          "up_to_7_days": {
+            "type": "integer",
+            "title": "Up To 7 Days"
+          },
+          "days_8_to_30": {
+            "type": "integer",
+            "title": "Days 8 To 30"
+          },
+          "over_30_days": {
+            "type": "integer",
+            "title": "Over 30 Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "up_to_7_days",
+          "days_8_to_30",
+          "over_30_days"
+        ],
+        "title": "OpenAge"
+      },
       "PersonRead": {
         "properties": {
           "user_id": {
@@ -5799,6 +5963,83 @@
           "name"
         ],
         "title": "ProjectCreate"
+      },
+      "ProjectDashboard": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          },
+          "exact_history_since": {
+            "type": "string",
+            "format": "date",
+            "title": "Exact History Since"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/WeekCounts"
+            },
+            "type": "array",
+            "title": "Weeks"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "done": {
+            "type": "integer",
+            "title": "Done"
+          },
+          "cycle_time": {
+            "$ref": "#/components/schemas/Duration"
+          },
+          "lead_time": {
+            "$ref": "#/components/schemas/Duration"
+          },
+          "open_by_status": {
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array",
+            "title": "Open By Status"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue"
+          },
+          "open_age": {
+            "$ref": "#/components/schemas/OpenAge"
+          },
+          "workload": {
+            "items": {
+              "$ref": "#/components/schemas/WorkloadRow"
+            },
+            "type": "array",
+            "title": "Workload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "exact_history_since",
+          "weeks",
+          "created",
+          "done",
+          "cycle_time",
+          "lead_time",
+          "open_by_status",
+          "overdue",
+          "open_age",
+          "workload"
+        ],
+        "title": "ProjectDashboard"
       },
       "ProjectRead": {
         "properties": {
@@ -6095,6 +6336,23 @@
           "level"
         ],
         "title": "SkillWrite"
+      },
+      "StatusCount": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/TicketStatus"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "count"
+        ],
+        "title": "StatusCount"
       },
       "TicketBrief": {
         "properties": {
@@ -7010,6 +7268,64 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WeekCounts": {
+        "properties": {
+          "week": {
+            "type": "string",
+            "format": "date",
+            "title": "Week"
+          },
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "done": {
+            "type": "integer",
+            "title": "Done"
+          }
+        },
+        "type": "object",
+        "required": [
+          "week",
+          "created",
+          "done"
+        ],
+        "title": "WeekCounts"
+      },
+      "WorkloadRow": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "open_tickets": {
+            "type": "integer",
+            "title": "Open Tickets"
+          },
+          "open_points": {
+            "type": "integer",
+            "title": "Open Points"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "display_name",
+          "open_tickets",
+          "open_points",
+          "overdue"
+        ],
+        "title": "WorkloadRow"
       },
       "WorkspaceCreate": {
         "properties": {

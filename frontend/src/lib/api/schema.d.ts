@@ -818,6 +818,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/projects/{project_id}/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Dashboard
+         * @description Team KPIs for the inclusive date range (default: the last 30 days).
+         */
+        get: operations["project_dashboard_projects__project_id__dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1028,6 +1048,18 @@ export interface components {
          * @enum {string}
          */
         CvImportStatus: "queued" | "needs_review" | "approved" | "rejected" | "failed";
+        /**
+         * Duration
+         * @description Days, over the tickets finished in the range. None when there are none.
+         */
+        Duration: {
+            /** Median Days */
+            median_days: number | null;
+            /** P90 Days */
+            p90_days: number | null;
+            /** Tickets */
+            tickets: number;
+        };
         /** EmailRequest */
         EmailRequest: {
             /**
@@ -1182,6 +1214,15 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** OpenAge */
+        OpenAge: {
+            /** Up To 7 Days */
+            up_to_7_days: number;
+            /** Days 8 To 30 */
+            days_8_to_30: number;
+            /** Over 30 Days */
+            over_30_days: number;
+        };
         /** PersonRead */
         PersonRead: {
             /**
@@ -1263,6 +1304,39 @@ export interface components {
              * @default
              */
             description?: string;
+        };
+        /** ProjectDashboard */
+        ProjectDashboard: {
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /**
+             * Exact History Since
+             * Format: date
+             */
+            exact_history_since: string;
+            /** Weeks */
+            weeks: components["schemas"]["WeekCounts"][];
+            /** Created */
+            created: number;
+            /** Done */
+            done: number;
+            cycle_time: components["schemas"]["Duration"];
+            lead_time: components["schemas"]["Duration"];
+            /** Open By Status */
+            open_by_status: components["schemas"]["StatusCount"][];
+            /** Overdue */
+            overdue: number;
+            open_age: components["schemas"]["OpenAge"];
+            /** Workload */
+            workload: components["schemas"]["WorkloadRow"][];
         };
         /** ProjectRead */
         ProjectRead: {
@@ -1384,6 +1458,12 @@ export interface components {
             name: string;
             /** Level */
             level: number;
+        };
+        /** StatusCount */
+        StatusCount: {
+            status: components["schemas"]["TicketStatus"];
+            /** Count */
+            count: number;
         };
         /**
          * TicketBrief
@@ -1643,6 +1723,34 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WeekCounts */
+        WeekCounts: {
+            /**
+             * Week
+             * Format: date
+             */
+            week: string;
+            /** Created */
+            created: number;
+            /** Done */
+            done: number;
+        };
+        /** WorkloadRow */
+        WorkloadRow: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Open Tickets */
+            open_tickets: number;
+            /** Open Points */
+            open_points: number;
+            /** Overdue */
+            overdue: number;
         };
         /** WorkspaceCreate */
         WorkspaceCreate: {
@@ -4989,6 +5097,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_dashboard_projects__project_id__dashboard_get: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                end?: string | null;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectDashboard"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import type { DateRange } from "@/components/range-picker";
 import { api, call } from "@/lib/api/client";
 import type { Category, Status } from "@/lib/tickets";
 
@@ -35,6 +36,8 @@ export const keys = {
   similar: (ticketId: string) => ["tickets", ticketId, "similar"] as const,
   triage: (ticketId: string) => ["tickets", ticketId, "triage"] as const,
   assignment: (ticketId: string) => ["tickets", ticketId, "assignment"] as const,
+  dashboard: (projectId: string, range: DateRange) =>
+    ["projects", projectId, "dashboard", range] as const,
 };
 
 export function useMe() {
@@ -155,6 +158,19 @@ export function useAssignmentSuggestions(ticketId: string) {
         }),
       ),
     refetchInterval: (query) => (query.state.data?.status === "explaining" ? 2000 : false),
+  });
+}
+
+export function useProjectDashboard(projectId: string, range: DateRange) {
+  return useQuery({
+    queryKey: keys.dashboard(projectId, range),
+    queryFn: () =>
+      call(
+        api.GET("/projects/{project_id}/dashboard", {
+          params: { path: { project_id: projectId }, query: range },
+        }),
+      ),
+    placeholderData: (previous) => previous, // keep the old numbers while a new range loads
   });
 }
 

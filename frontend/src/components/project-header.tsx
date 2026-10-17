@@ -15,6 +15,7 @@ export function ProjectHeader() {
   const tabs = [
     { href: base, label: "Tickets", active: pathname === base || pathname.startsWith(`${base}/tickets`) },
     { href: `${base}/board`, label: "Board", active: pathname === `${base}/board` },
+    { href: `${base}/dashboard`, label: "Dashboard", active: pathname === `${base}/dashboard` },
     { href: `${base}/team`, label: "Team", active: pathname === `${base}/team` },
   ];
 
