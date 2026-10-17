@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.llm import LLMClient, create_llm_client
 from app.core.logging import configure_logging, log_fields, run_id_var
 from app.db.session import SessionLocal, engine
-from app.services import cv_imports, jobs, triage, triage_queue
+from app.services import assignment, cv_imports, jobs, triage, triage_queue
 from app.services.storage import get_storage
 
 logger = logging.getLogger(__name__)
@@ -98,7 +98,14 @@ def handlers() -> dict[str, Handler]:
     async def triage_ticket(session: AsyncSession, payload: dict[str, Any]) -> None:
         await triage.run(session, payload, llm=_llm, storage=get_storage())
 
-    return {cv_imports.JOB_KIND: cv_import, triage_queue.JOB_KIND: triage_ticket}
+    async def assignment_reasons(session: AsyncSession, payload: dict[str, Any]) -> None:
+        await assignment.run(session, payload, llm=_llm)
+
+    return {
+        cv_imports.JOB_KIND: cv_import,
+        triage_queue.JOB_KIND: triage_ticket,
+        assignment.JOB_KIND: assignment_reasons,
+    }
 
 
 async def main() -> None:

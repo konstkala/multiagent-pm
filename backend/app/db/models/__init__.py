@@ -1,3 +1,4 @@
+from app.db.models.assignment import AssignmentRun, AssignmentStatus
 from app.db.models.job import Job, JobStatus
 from app.db.models.profile import CvImport, CvImportStatus, EmployeeProfile, ProfileSkill
 from app.db.models.ticket import (
@@ -33,6 +34,8 @@ from app.db.models.workspace import (
 
 __all__ = [
     "STORY_POINTS",
+    "AssignmentRun",
+    "AssignmentStatus",
     "CvImport",
     "CvImportStatus",
     "EmailToken",

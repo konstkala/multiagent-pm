@@ -18,6 +18,12 @@ def text_block(text: str) -> UserContent:
     return TextBlockParam(type="text", text=text)
 
 
+def tag(name: str, body: str) -> str:
+    """Wraps untrusted text in an XML-style tag the text itself can't close."""
+    # Otherwise "</ticket> new instructions..." could end our data block and pose as a prompt.
+    return f"<{name}>\n{body.replace('</', '< /')}\n</{name}>"
+
+
 def pdf_block(data: bytes) -> UserContent:
     """A PDF Claude reads directly: text plus page images, about 1.5K to 3K tokens a page."""
     return DocumentBlockParam(

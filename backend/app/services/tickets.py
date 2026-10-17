@@ -19,7 +19,7 @@ from app.db.models import (
     User,
 )
 from app.schemas.tickets import TicketCreate, TicketUpdate
-from app.services import access, triage_queue
+from app.services import access, assignment_choices, triage_queue
 from app.services.embeddings import Embedder
 
 logger = logging.getLogger(__name__)
@@ -151,6 +151,8 @@ async def update_ticket(
         await _check_duplicate_target(session, ticket, changes["duplicate_of"])
 
     before = {name: getattr(ticket, name) for name in changes}
+    if changes.get("assignee_id") not in (None, before.get("assignee_id")):
+        await assignment_choices.record_choice(session, ticket.id, changes["assignee_id"], actor)
     for name, value in changes.items():
         setattr(ticket, name, value)
     if _TEXT_FIELDS & changes.keys():

@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     CheckConstraint,
     DateTime,
@@ -21,6 +22,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+from app.db.models.ticket import EMBEDDING_DIM
 from app.db.types import text_enum
 
 
@@ -45,6 +47,10 @@ class EmployeeProfile(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    # Headline, summary and skill names, embedded on first use and cleared when the profile
+    # changes (ADR 0017). Nullable: no vector until the assignment agent needs one.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM))
+    embedding_model: Mapped[str | None] = mapped_column(String(100))
 
 
 class ProfileSkill(Base):

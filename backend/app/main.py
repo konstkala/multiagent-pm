@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 
 from app.api import (
+    assignment,
     attachments,
     auth,
     health,
@@ -67,3 +68,4 @@ app.include_router(people.router)
 app.include_router(tickets.router)
 app.include_router(attachments.router)
 app.include_router(triage.router)
+app.include_router(assignment.router)

@@ -7,7 +7,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from app.core.llm import LLMClient, RunBudget, StructuredResult, Tier, UserContent
-from app.core.llm.content import ImageType, image_block, text_block
+from app.core.llm.content import ImageType, image_block, tag, text_block
 from app.db.models import TicketCategory, TicketPriority
 
 PROMPT = (Path(__file__).parent / "prompt.md").read_text(encoding="utf-8")
@@ -78,8 +78,8 @@ async def triage(
 def build_content(data: TriageInput) -> list[UserContent]:
     """Images first, then the text that refers to them. All of it is untrusted data."""
     parts = [
-        _tag("ticket", f"key: {data.key}\ntitle: {data.title}\ndescription:\n{data.description}"),
-        _tag(
+        tag("ticket", f"key: {data.key}\ntitle: {data.title}\ndescription:\n{data.description}"),
+        tag(
             "similar_tickets",
             "\n".join(
                 f"#{t.number} | {t.title} | status {t.status} | category {t.category or '-'} "
@@ -88,10 +88,10 @@ def build_content(data: TriageInput) -> list[UserContent]:
             )
             or "none",
         ),
-        _tag("project_labels", ", ".join(data.project_labels) or "none yet"),
+        tag("project_labels", ", ".join(data.project_labels) or "none yet"),
     ]
     if data.answer is not None:
-        parts.append(_tag("manager_answer", f"You asked: {data.question}\nAnswer: {data.answer}"))
+        parts.append(tag("manager_answer", f"You asked: {data.question}\nAnswer: {data.answer}"))
     return [
         *(image_block(image.data, image.media_type) for image in data.images),
         text_block("\n\n".join(parts)),
@@ -119,11 +119,6 @@ def clean(proposal: TriageProposal, data: TriageInput) -> TriageProposal:
             "question": question if question and data.answer is None else None,
         }
     )
-
-
-def _tag(name: str, body: str) -> str:
-    # Stops ticket text from closing our tag and posing as instructions.
-    return f"<{name}>\n{body.replace('</', '< /')}\n</{name}>"
 
 
 def nearest_fibonacci(points: int) -> int:

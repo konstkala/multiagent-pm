@@ -127,6 +127,9 @@ async def save_profile(
         "years_experience": data.years_experience,
         "updated_by": actor.id,
         "updated_at": func.now(),
+        # The old vector describes the old profile; the assignment agent re-embeds on next use.
+        "embedding": None,
+        "embedding_model": None,
     }
     await session.execute(
         insert(EmployeeProfile)
