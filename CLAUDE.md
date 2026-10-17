@@ -6,7 +6,7 @@ Also a learning project: it should make me an expert **DevOps engineer** and **A
 
 ## Stack
 - **Backend**: Python 3.12, FastAPI (async), Pydantic v2, `uv`
-- **Agents**: LangGraph (orchestration, checkpoints, human-in-the-loop) + PydanticAI (typed agents inside nodes)
+- **Agents**: jobs on a Postgres queue + a worker; state and human review in the database; one structured call per step through `core/llm`
 - **DB**: Postgres 17 + pgvector. Local: Docker. Cloud: Neon free tier
 - **Queue / pub-sub**: Postgres (`SKIP LOCKED`, `LISTEN/NOTIFY`). No Redis until a measured need
 - **LLM**: Claude API
@@ -67,7 +67,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 ## Decisions (summary; full records go in docs/adr/)
 1. Python + FastAPI over Node: the agent ecosystem is Python-first.
 2. Postgres + pgvector over NoSQL: relational domain; one DB for data, vectors, checkpoints, queue.
-3. LangGraph for orchestration; PydanticAI deferred until a tool-using agent needs it (ADR 0009).
+3. Agents run as jobs with state in the database (ADR 0016); LangGraph and PydanticAI are deferred until an agent needs branching or tool loops (ADR 0009).
 4. Model routing: Haiku workers, Sonnet orchestrator.
 5. Next.js + TS frontend: React ecosystem, typed client from OpenAPI, suits streaming agent output and approval UIs.
 6. SQLAlchemy 2 async + Alembic + asyncpg: typed ORM, versioned migrations, async driver that works on Windows.
