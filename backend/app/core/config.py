@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     s3_secret_key: SecretStr = SecretStr("pm-dev-secret")
     attachment_max_bytes: int = 10 * 2**20
     cv_max_bytes: int = 5 * 2**20
+    # Off switch for the triage agent (e.g. to stop spending while testing something else).
+    triage_enabled: bool = True
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     smtp_starttls: bool = False

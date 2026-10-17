@@ -14,7 +14,9 @@ BACKOFF = timedelta(seconds=30)  # 30 s, 60 s, 120 s, ...
 
 def enqueue(session: AsyncSession, kind: str, payload: dict[str, Any]) -> Job:
     """Adds a job to the caller's transaction: it exists only if the caller's change commits."""
-    job = Job(kind=kind, payload=payload)
+    # One clock for all queue times: the app's. The database clock (server default) can be a
+    # little ahead, which made brand-new jobs look "not due yet" to claim().
+    job = Job(kind=kind, payload=payload, run_after=datetime.now(UTC))
     session.add(job)
     return job
 

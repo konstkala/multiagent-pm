@@ -15,10 +15,11 @@ from app.db.models import (
     TicketCategory,
     TicketComment,
     TicketStatus,
+    TriageTrigger,
     User,
 )
 from app.schemas.tickets import TicketCreate, TicketUpdate
-from app.services import access
+from app.services import access, triage_queue
 from app.services.embeddings import Embedder
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,9 @@ async def create_ticket(
     )
     await _set_embedding(ticket, embedder)
     session.add(ticket)
+    await session.flush()
+    # Same transaction: a ticket is never saved without its triage run, or the reverse.
+    await triage_queue.enqueue(session, ticket, TriageTrigger.CREATED)
     await session.commit()
     await session.refresh(ticket)
     logger.info(
@@ -132,7 +136,7 @@ async def update_ticket(
     ticket_id: uuid.UUID,
     data: TicketUpdate,
     actor: User,
-    embedder: Embedder,
+    embedder: Embedder | None,
 ) -> Ticket:
     ticket = await get_ticket(session, ticket_id, actor)
     role = await access.project_role(session, ticket.project_id, actor)
@@ -150,6 +154,8 @@ async def update_ticket(
     for name, value in changes.items():
         setattr(ticket, name, value)
     if _TEXT_FIELDS & changes.keys():
+        if embedder is None:
+            raise RuntimeError("changing title or description needs an embedder")
         await _set_embedding(ticket, embedder)
     await session.commit()
     await session.refresh(ticket)

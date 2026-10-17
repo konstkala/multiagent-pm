@@ -11,6 +11,7 @@ from app.db.models.ticket import (
     TicketPriority,
     TicketStatus,
 )
+from app.db.models.triage import TriageRun, TriageStatus, TriageTrigger
 from app.db.models.user import (
     EmailToken,
     EmailTokenPurpose,
@@ -55,6 +56,9 @@ __all__ = [
     "TicketLink",
     "TicketPriority",
     "TicketStatus",
+    "TriageRun",
+    "TriageStatus",
+    "TriageTrigger",
     "User",
     "UserSession",
     "Workspace",

@@ -6,7 +6,16 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 
-from app.api import attachments, auth, health, invitations, people, tickets, workspaces
+from app.api import (
+    attachments,
+    auth,
+    health,
+    invitations,
+    people,
+    tickets,
+    triage,
+    workspaces,
+)
 from app.api.errors import register_error_handlers
 from app.api.middleware import (
     CSRF_HEADER,
@@ -57,3 +66,4 @@ app.include_router(invitations.router)
 app.include_router(people.router)
 app.include_router(tickets.router)
 app.include_router(attachments.router)
+app.include_router(triage.router)
