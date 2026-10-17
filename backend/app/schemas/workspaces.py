@@ -1,5 +1,6 @@
 import uuid
-from typing import Annotated
+from datetime import datetime
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, EmailStr, Field, StringConstraints
 
@@ -41,6 +42,39 @@ class MemberAdd(BaseModel):
 
 class RoleUpdate(BaseModel):
     role: ProjectRole
+
+
+class InvitationCreate(BaseModel):
+    email: EmailStr
+    role: ProjectRole = ProjectRole.EMPLOYEE
+
+
+class InvitationRead(BaseModel):
+    id: uuid.UUID
+    email: str
+    role: ProjectRole
+    invited_by_name: str | None
+    expires_at: datetime
+    created_at: datetime
+
+
+class InvitationToken(BaseModel):
+    token: Annotated[str, StringConstraints(min_length=20, max_length=200)]
+
+
+class InvitationPreviewRead(BaseModel):
+    project_id: uuid.UUID
+    project_name: str
+    project_key: str
+    workspace_name: str
+    inviter_name: str | None
+    email: str
+    role: ProjectRole
+    status: Literal["pending", "accepted", "revoked", "expired"]
+
+
+class AcceptedInvitation(BaseModel):
+    project_id: uuid.UUID
 
 
 class MemberRead(BaseModel):

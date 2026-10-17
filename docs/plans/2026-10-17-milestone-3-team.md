@@ -22,6 +22,6 @@ Parent: [product plan v1](2026-10-16-product-v1.md). UI stays functional and pla
 
 ## Steps (commit after each)
 - 3a Job queue + worker process + compose service. **Done** (8 tests incl. 4 workers racing for 5 jobs; SIGTERM → clean exit in <1 s)
-- 3b Invitations (create, list, revoke, accept; email via Mailpit)
+- 3b Invitations (create, list, revoke, accept; email via Mailpit). **Done** (migration 0009, 9 tests)
 - 3c Profiles + CV import agent (gateway structured output with PDF input, job handler, review/approve API)
 - 3d Screens: invitations on the Team page, accept page, profile page, CV upload and review

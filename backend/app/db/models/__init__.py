@@ -21,6 +21,7 @@ from app.db.models.user import (
 )
 from app.db.models.workspace import (
     Project,
+    ProjectInvitation,
     ProjectMember,
     ProjectRole,
     Workspace,
@@ -38,6 +39,7 @@ __all__ = [
     "OAuthIdentity",
     "OAuthState",
     "Project",
+    "ProjectInvitation",
     "ProjectMember",
     "ProjectRole",
     "RateLimitBucket",

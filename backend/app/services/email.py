@@ -104,3 +104,16 @@ def reset_password_email(to: str, token: str) -> EmailMessage:
         "If you didn't ask for this, ignore this email; your password stays the same.",
         template="reset_password",
     )
+
+
+def invitation_email(to: str, inviter: str, project: str, token: str) -> EmailMessage:
+    link = f"{settings.app_base_url}/invite?token={token}"
+    return EmailMessage(
+        to=to,
+        subject=f"{inviter} invited you to {project}",
+        body=f"{inviter} invited you to join the project {project}.\n\n"
+        f"Accept the invitation:\n\n{link}\n\n"
+        "If you don't have an account yet, create one with this email address first. "
+        "The link works once and expires in 7 days.",
+        template="project_invitation",
+    )
