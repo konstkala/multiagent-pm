@@ -1,0 +1,17 @@
+# Runs the images CI published instead of building them here: deploy exactly what was tested.
+#   TAG=sha-abc1234 docker compose -f docker-compose.yml -f compose.release.yml up -d
+# Tags are on https://github.com/konstkala/multiagent-pm/pkgs/container/multiagent-pm-backend
+# (sha-<commit> for every commit on main, or a version like 1.2.0).
+x-release-backend: &release-backend
+  image: ghcr.io/konstkala/multiagent-pm-backend:${TAG:?set TAG, e.g. TAG=sha-abc1234}
+  build: !reset null
+  pull_policy: always
+
+services:
+  migrate: *release-backend
+  api: *release-backend
+  worker: *release-backend
+  web:
+    image: ghcr.io/konstkala/multiagent-pm-web:${TAG:?set TAG, e.g. TAG=sha-abc1234}
+    build: !reset null
+    pull_policy: always
