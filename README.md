@@ -1,6 +1,8 @@
 # Multiagent PM
 
 [![CI](https://github.com/konstkala/multiagent-pm/actions/workflows/ci.yml/badge.svg)](https://github.com/konstkala/multiagent-pm/actions/workflows/ci.yml)
+[![Images](https://github.com/konstkala/multiagent-pm/actions/workflows/images.yml/badge.svg)](https://github.com/konstkala/multiagent-pm/actions/workflows/images.yml)
+[![CodeQL](https://github.com/konstkala/multiagent-pm/actions/workflows/codeql.yml/badge.svg)](https://github.com/konstkala/multiagent-pm/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 AI-assisted project management. Managers run projects with their teams; AI agents read CVs into skill profiles, triage new tickets (category, labels, priority, story points, duplicates) and suggest who should take each ticket. People make every consequential decision, and every agent run is measured: cost, latency, and how often managers keep what it suggested.
@@ -132,6 +134,15 @@ Every push and pull request runs [GitHub Actions](.github/workflows/ci.yml), at 
 
 Actions are pinned to commit SHAs, and jobs get read-only permissions by default.
 
+**Delivery and supply chain:**
+- **Images:** every commit on `main` builds both images once and publishes them to GitHub's container registry as `sha-<commit>`.
+  - Each image gets an SBOM (a list of every package inside) and a build provenance signed through GitHub's OIDC identity: `gh attestation verify` shows which workflow and commit built it.
+  - A Trivy scan reports HIGH and CRITICAL findings to the Security tab and fails on a fixable CRITICAL. That gate caught three CVEs in the web image's base on the first run.
+  - A `v*` tag also cuts a GitHub Release.
+- **Security checks:** CodeQL static analysis; Dependabot updates that wait 14 days after each release; secret scanning with push protection; a ruleset that blocks force pushes and deletion of `main`.
+- **Local guard rails:** pre-commit hooks (ruff, gitleaks, file hygiene), and a Claude Code hook that blocks force pushes, history rewrites and `terraform apply` for the AI assistant.
+- **End to end:** `backend/scripts/smoke/` drives the real stack through the web proxy (80 checks, real Claude calls, about $0.003). Run it locally, or on demand in [Actions](.github/workflows/e2e.yml).
+
 ## Quick start
 
 Requires Docker, Python 3.12 and [uv](https://docs.astral.sh/uv/).
@@ -150,6 +161,13 @@ Or run everything in containers (database, migration job, API, web app, fake inb
 ```sh
 docker compose up -d --build             # app http://localhost:3000 · API docs http://localhost:8000/docs · inbox http://localhost:8025
 docker compose down                      # stop; data is kept in a volume
+```
+
+Or run the exact images CI published (no local build), then the end-to-end smoke tests:
+
+```sh
+TAG=sha-<commit> docker compose -f docker-compose.yml -f compose.release.yml up -d --wait
+cd backend && uv run python -m scripts.smoke   # real Haiku calls, about $0.003
 ```
 
 Run the checks:
@@ -192,7 +210,8 @@ docs/
 | M6 | **Dashboards**: ticket history, team KPIs, AI agent metrics (acceptance per field, hit rate, $, p95), my work, calendar | Done |
 | 5 | Approval API; evaluation set from recorded manager decisions | Approval API done; eval set planned |
 | 6 | Next.js frontend | Built across M1–M6; design pass pending |
-| 7 | CI/CD, cloud deployment with Terraform, tracing and alerts | Next |
+| 7a | **CI/CD without a cloud**: public repo, CI, signed and scanned images on GHCR, CodeQL, Dependabot, pre-commit, guard hook, smoke suites | Done |
+| 7b | Cloud deployment with Terraform (staging, prod), tracing and alerts | Postponed |
 | 8 | Kubernetes (local cluster, Helm, GitOps) | Planned |
 
 More: [CLAUDE.md](CLAUDE.md) (project conventions) · [docs/learning/roadmap.md](docs/learning/roadmap.md) · [docs/adr/](docs/adr/)

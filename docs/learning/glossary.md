@@ -107,6 +107,26 @@ A few words each. New technologies are added as they appear.
 | **Backfill (data migration)** | A migration that fills new tables from existing data, kept separate from schema changes | Old tickets got approximate history; the dashboard says from when it's exact |
 | **Cycle time / lead time / throughput** | Start → done / created → done / done per week | The core flow KPIs of agile teams (Kanban) |
 | **Percentiles (p50, p90, p95)** | The value below which 50 / 90 / 95% of cases fall | Medians resist outliers; p90/p95 show the slow tail people actually feel |
+
+### CI/CD and supply chain
+
+| Tech | What it is | Why we use it |
+|---|---|---|
+| **GitHub Actions** | CI/CD that runs workflows (YAML) on GitHub's machines | Every push is linted, type-checked and tested against a real Postgres |
+| **Service container** | A container (here Postgres + pgvector) started next to a CI job | Tests use the real database, not a mock |
+| **SHA pinning** | Referencing an action by commit hash, not a tag | A tag can be moved to malicious code; a hash can't |
+| **GHCR** | GitHub Container Registry | Stores our images next to the code; free for public repos |
+| **Build once, deploy by tag** | CI builds one image per commit; every environment runs that exact image | What you tested is what runs |
+| **SBOM** | Software Bill of Materials: every package inside an image | Answers 'are we affected?' when a new CVE appears |
+| **Provenance attestation** | A signed statement of which workflow and commit built an image | `gh attestation verify` proves an image wasn't built elsewhere |
+| **Trivy / SARIF** | Vulnerability scanner / the standard format for scan results | Findings land in GitHub's Security tab; a fixable CRITICAL fails the build |
+| **CodeQL** | GitHub's static analysis for security bugs | Finds injection-style bugs in our own code |
+| **Dependabot (with cooldown)** | Automatic dependency-update pull requests | Stays current; waiting 14 days avoids most hijacked releases |
+| **pre-commit** | Runs checks before each commit on your machine | Problems are caught before they reach a push |
+| **Ruleset** | Repository rules on branches (no force push, no deletion) | `main`'s history can't be rewritten by accident |
+| **Secret scanning / push protection** | GitHub detects keys in pushes and blocks them | A last line of defence after gitleaks and `.gitignore` |
+| **OAuth scope** | What a token may do (`repo`, `workflow`...) | Least privilege for your own tools: pushing workflows needs its own scope |
+| **History rewrite** | Changing past commits (here: the author email) before publishing | Commit ids change; only safe before anyone else has the history |
 | **Recharts** | React chart library built on SVG | Bar charts with tooltips for dashboards, restyled later |
 
 ### Tickets and files

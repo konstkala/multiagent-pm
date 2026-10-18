@@ -47,6 +47,10 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Test one: `uv run pytest tests/test_health.py::test_health_returns_ok`
 - Tests use a throwaway `pm_test` database built from the migrations; each test is rolled back
 - Check (run before saying done): `uv run ruff check --fix . && uv run ruff format . && uv run pyright && uv run pytest`
+- Smoke the running stack (from `backend/`, after `docker compose up -d --build --wait`): `uv run python -m scripts.smoke` (or the `/smoke` skill). Real Haiku calls, about $0.003
+- Pre-commit hooks, once per clone: `uv tool install pre-commit==4.6.2` then `pre-commit install`
+- Run the images CI published: `TAG=sha-<commit> docker compose -f docker-compose.yml -f compose.release.yml up -d --wait`
+- CI: `.github/workflows/` (ci, images, codeql, e2e). Watch a run: `gh run watch`. Actions are pinned by SHA, at least 2 weeks old
 
 ## Principles
 - Clean code: small functions, full type hints, no dead code.
@@ -79,6 +83,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 12. Attachments in S3-compatible storage via boto3; SeaweedFS locally, S3/R2 in production (0015).
 13. Assignment scoring: lazy profile embeddings, the LLM sees letters + facts only, every pick recorded for a hit rate (0017). Job priority: interactive before background (0018).
 14. Ticket history in a `ticket_events` table; KPIs are SQL computed on request, rollups only once measured slow (0019).
+15. CI/CD on GitHub Actions; images on GHCR with SBOM, signed provenance and Trivy; built once, deployed by tag (0020).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.
@@ -96,4 +101,5 @@ Roadmap and progress: `docs/learning/roadmap.md`.
 - New decision → new ADR in `docs/adr/`.
 - Done means: tests pass, cost impact noted.
 - Area rules: `.claude/rules/` (agents, api, db, tests, frontend load for their paths; logging always loads).
+- Guard hook: `.claude/hooks/guard_commands.py` blocks force pushes, history rewrites, repo deletion or visibility changes and `terraform apply|destroy`. When blocked, give the user the exact command to run.
 - Prompting cheat sheet: `docs/claude-code-cheatsheet.md`.

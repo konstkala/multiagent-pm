@@ -1,0 +1,55 @@
+# The whole stack in Docker Compose plus the smoke suites, with real Claude calls.
+# Manual only (Actions → E2E → Run workflow): about $0.003 per run, and it needs the
+# ANTHROPIC_API_KEY repository secret (Settings → Secrets and variables → Actions).
+# Secrets never reach pull requests from forks, so this can't be triggered by strangers.
+name: E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      suites:
+        description: "Suites to run, e.g. 'm4 m5' (empty: all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: API key from the repository secret
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Add the ANTHROPIC_API_KEY repository secret first."
+            exit 1
+          fi
+          # Compose reads backend/.env (see docker-compose.yml); the runner is thrown away after.
+          umask 077
+          printf 'ANTHROPIC_API_KEY=%s\n' "$ANTHROPIC_API_KEY" > backend/.env
+      - name: Start the stack
+        run: docker compose up -d --build --wait --wait-timeout 300
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.13.1"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Smoke suites
+        working-directory: backend
+        env:
+          SUITES: ${{ inputs.suites }}
+        run: |
+          uv sync --locked
+          # shellcheck disable=SC2086 # split the suite names on purpose
+          uv run python -m scripts.smoke $SUITES
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200 api worker web
