@@ -12,7 +12,7 @@ import {
 export function StatusPill({ status }: { status: Status }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded-sm border px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-sm border px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
     >
       {STATUS_LABEL[status]}
     </span>

@@ -59,8 +59,10 @@ export function isOverdue(dueDate: string | null, status: Status): boolean {
   return dueDate < new Date().toISOString().slice(0, 10);
 }
 
-const dayFormat = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
-const timeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+// The interface is English, so dates are too (day first), whatever the browser's language.
+export const LOCALE = "en-GB";
+const dayFormat = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "short" });
+const timeFormat = new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeStyle: "short" });
 
 export function formatDay(isoDate: string): string {
   return dayFormat.format(new Date(`${isoDate}T00:00:00`));

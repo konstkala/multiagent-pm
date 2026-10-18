@@ -6,12 +6,13 @@ import { useState } from "react";
 import { Alert, Button, Loading } from "@/components/ui";
 import { errorText, type Schemas } from "@/lib/api/client";
 import { useCalendar } from "@/lib/queries";
-import { STATUS_STYLE, isOverdue } from "@/lib/tickets";
+import { LOCALE, STATUS_STYLE, isOverdue } from "@/lib/tickets";
 
 type DueTicket = Schemas["CalendarTicket"];
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const monthFormat = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
+const monthFormat = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" });
+const agendaDay = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long" });
 
 /** A month grid of due dates: six weeks from the Monday before the 1st (42 days). */
 export function CalendarView() {
@@ -62,7 +63,8 @@ export function CalendarView() {
       </div>
       {calendar.isPending ? <Loading /> : null}
       {calendar.isError ? <Alert tone="error">{errorText(calendar.error)}</Alert> : null}
-      <div className="grid grid-cols-7 overflow-hidden rounded-sm border border-border bg-border text-sm" style={{ gap: 1 }}>
+      <Agenda days={days} month={month} byDay={byDay} />
+      <div className="hidden grid-cols-7 overflow-hidden md:grid rounded-sm border border-border bg-border text-sm" style={{ gap: 1 }}>
         {WEEKDAYS.map((day) => (
           <div key={day} className="bg-subtle px-2 py-1 text-xs font-medium text-muted">
             {day}
@@ -86,6 +88,34 @@ export function CalendarView() {
         })}
       </div>
     </div>
+  );
+}
+
+/** Phones: a month grid is too small to read, so list the days that have something due. */
+function Agenda({
+  days,
+  month,
+  byDay,
+}: {
+  days: Date[];
+  month: Date;
+  byDay: Map<string, DueTicket[]>;
+}) {
+  const due = days.filter((day) => day.getMonth() === month.getMonth() && byDay.has(isoDay(day)));
+  if (!due.length) return <p className="text-sm text-muted md:hidden">Nothing due this month.</p>;
+  return (
+    <ol className="flex flex-col gap-4 md:hidden">
+      {due.map((day) => (
+        <li key={isoDay(day)} className="flex flex-col gap-1.5">
+          <h2 className="text-xs font-semibold text-muted">{agendaDay.format(day)}</h2>
+          <ul className="flex flex-col gap-1">
+            {(byDay.get(isoDay(day)) ?? []).map((ticket) => (
+              <DueItem key={ticket.id} ticket={ticket} />
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ol>
   );
 }
 

@@ -176,7 +176,28 @@ export function TicketsList() {
           </p>
         ) : null}
         {tickets.data && tickets.data.items.length > 0 ? (
-          <table className="w-full min-w-[720px] text-left text-sm">
+          <>
+          <ul className="divide-y divide-border md:hidden">
+            {tickets.data.items.map((ticket) => (
+              <li key={ticket.id} className="flex flex-col gap-1.5 p-3">
+                <Link
+                  href={`/projects/${projectId}/tickets/${ticket.id}`}
+                  className="font-medium hover:text-link hover:underline"
+                >
+                  {ticket.title}
+                </Link>
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                  <span className="font-mono">{ticketKey(project.data.key, ticket.number)}</span>
+                  <StatusPill status={ticket.status} />
+                  <PriorityText priority={ticket.priority} />
+                  <Points points={ticket.story_points} />
+                  <DueDate dueDate={ticket.due_date} status={ticket.status} />
+                </span>
+                <AssigneeName assigneeId={ticket.assignee_id} members={memberList} />
+              </li>
+            ))}
+          </ul>
+          <table className="hidden w-full text-left text-sm md:table">
             <thead className="border-b border-border text-xs text-muted">
               <tr>
                 <th className="px-4 py-2 font-medium">Key</th>
@@ -226,6 +247,7 @@ export function TicketsList() {
               ))}
             </tbody>
           </table>
+          </>
         ) : null}
       </div>
 
