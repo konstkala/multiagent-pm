@@ -356,7 +356,7 @@ function KeepRow({
         <input type="checkbox" checked={kept} onChange={(event) => onKeep(event.target.checked)} />
         {label}
       </label>
-      <div className={kept ? "" : "opacity-50"}>{children}</div>
+      <div className={kept ? "" : "text-muted"}>{children}</div>
     </div>
   );
 }

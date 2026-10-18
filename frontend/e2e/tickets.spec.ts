@@ -66,8 +66,8 @@ test("a card dragged on the board changes status", async ({ page }) => {
   // dnd-kit gives draggable cards role="button", so find the card by its tag.
   const card = page.locator("article").filter({ hasText: title });
   const target = page.getByRole("region", { name: "In progress" });
-  // Grab the card by its key, not the title link, so the drop isn't read as a click.
-  const handle = await card.locator(".font-mono").boundingBox();
+  // The card's drag handle is a button named "Move KEY-n".
+  const handle = await card.getByRole("button", { name: /^Move / }).boundingBox();
   const drop = await target.boundingBox();
   if (!handle || !drop) throw new Error("board not laid out");
   await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);

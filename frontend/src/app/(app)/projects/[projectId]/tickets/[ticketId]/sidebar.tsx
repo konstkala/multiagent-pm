@@ -189,12 +189,12 @@ export function Sidebar({ context }: { context: TicketContext }) {
             )}
           </Field>
 
-          <div className="flex flex-col gap-1 border-t border-border pt-3 text-xs text-muted">
-            <span>Reported by {reporter ?? "a former member"}</span>
-            <span>Created {formatTime(ticket.created_at)}</span>
-            <span>Updated {formatTime(ticket.updated_at)}</span>
-          </div>
         </dl>
+        <div className="mt-4 flex flex-col gap-1 border-t border-border pt-3 text-xs text-muted">
+          <span>Reported by {reporter ?? "a former member"}</span>
+          <span>Created {formatTime(ticket.created_at)}</span>
+          <span>Updated {formatTime(ticket.updated_at)}</span>
+        </div>
         {update.isError ? (
           <div className="mt-3">
             <Alert tone="error">{errorText(update.error)}</Alert>

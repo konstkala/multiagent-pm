@@ -173,15 +173,26 @@ function Card({
     <article
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform) }}
-      {...attributes}
-      {...listeners}
-      className={`flex flex-col gap-2 rounded-sm border border-border bg-surface p-3 shadow-sm ${
-        draggable ? "cursor-grab active:cursor-grabbing" : ""
-      } ${isDragging ? "z-10 opacity-80 shadow-lg" : ""}`}
+      className={`relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-3 shadow-sm ${
+        isDragging ? "z-10 opacity-80 shadow-lg" : ""
+      }`}
     >
+      {draggable ? (
+        // The handle is the only draggable control (touch-none: a finger on it drags, a finger
+        // on the card still scrolls). Keyboard: focus it, Space to lift, arrows to move.
+        <button
+          type="button"
+          aria-label={`Move ${ticketKey(projectKey, ticket.number)}`}
+          {...attributes}
+          {...listeners}
+          className="absolute right-1 top-1 cursor-grab touch-none rounded-sm px-1.5 py-0.5 text-muted hover:bg-subtle active:cursor-grabbing"
+        >
+          <span aria-hidden="true">⋮⋮</span>
+        </button>
+      ) : null}
       <Link
         href={`/projects/${projectId}/tickets/${ticket.id}`}
-        className="line-clamp-3 text-sm font-medium hover:text-link hover:underline"
+        className="line-clamp-3 pr-6 text-sm font-medium hover:text-link hover:underline"
       >
         {ticket.title}
       </Link>

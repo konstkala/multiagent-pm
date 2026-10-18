@@ -74,7 +74,7 @@ export function CalendarView() {
           const iso = isoDay(day);
           const inMonth = day.getMonth() === month.getMonth();
           return (
-            <div key={iso} className={`min-h-24 bg-surface p-1.5 ${inMonth ? "" : "opacity-50"}`}>
+            <div key={iso} className={`min-h-24 bg-surface p-1.5 ${inMonth ? "" : "bg-subtle"}`}>
               <div className={`mb-1 text-xs ${iso === today ? "font-semibold text-link" : "text-muted"}`}>
                 {day.getDate()}
               </div>
