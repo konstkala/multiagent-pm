@@ -101,5 +101,6 @@ Roadmap and progress: `docs/learning/roadmap.md`.
 - New decision → new ADR in `docs/adr/`.
 - Done means: tests pass, cost impact noted.
 - Area rules: `.claude/rules/` (agents, api, db, tests, frontend load for their paths; logging always loads).
+- Look at the UI, don't guess: the Playwright MCP (`.mcp.json`) opens the running app. After a UI change, screenshot it at 1440 and 390 px wide, light and dark, and compare with the chosen mockup (https://claude.ai/artifact/3jyxBC1WQxHqey8ER8CYg8, "C · Paper"). Browser tests: `npm run e2e` in `frontend/` (stack running).
 - Guard hook: `.claude/hooks/guard_commands.py` blocks force pushes, history rewrites, repo deletion or visibility changes and `terraform apply|destroy`. When blocked, give the user the exact command to run.
 - Prompting cheat sheet: `docs/claude-code-cheatsheet.md`.
