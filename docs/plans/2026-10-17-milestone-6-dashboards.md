@@ -68,4 +68,3 @@ Done in four commits (6a–6d). End-to-end smoke through the containers: 16/16 p
 - Bug caught by a test: a LEFT JOIN row for someone with no open tickets counted as 3 "unpointed" points. Fixed with `FILTER (WHERE t.id IS NOT NULL)`.
 - Changes from the plan: the calendar filters by project in the browser (one API parameter fewer); migration 0017 adds `triage_runs.accepted`.
 - Logs: ids, counts and durations only.
-

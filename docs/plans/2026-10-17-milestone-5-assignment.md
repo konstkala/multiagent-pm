@@ -65,4 +65,3 @@ Both steps are done. End-to-end smoke through the containers: 11/11 passed, with
 - Found in the smoke run: the reasons took 14.3 s because the job queued behind 6 triage jobs (head-of-line blocking). Fixed with job priority (ADR 0018): now 4.2 s.
 - Change from the plan: migrations split into 0012 (profile embeddings) and 0013 (assignment runs), one concern each, plus 0014 (job priority).
 - Logs: ids, counts and timings only. No names, skills or ticket text.
-
