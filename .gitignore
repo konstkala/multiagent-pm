@@ -9,6 +9,11 @@ __pycache__/
 node_modules/
 .next/
 
+# Playwright: saved sessions (contain cookies) and run output
+frontend/e2e/.auth/
+frontend/test-results/
+frontend/playwright-report/
+
 # Env and local
 .env
 CLAUDE.local.md

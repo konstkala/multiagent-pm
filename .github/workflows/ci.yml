@@ -106,6 +106,43 @@ jobs:
             exit 1
           fi
 
+  # The real stack in Docker Compose, driven by a real browser (Playwright). No API key in CI:
+  # the triage agent is switched off, the AI flows are covered by the smoke suites instead.
+  e2e-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      TRIAGE_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Start the stack
+        run: docker compose up -d --build --wait --wait-timeout 300
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Browser
+        working-directory: frontend
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Browser tests
+        working-directory: frontend
+        run: npx playwright test
+      - name: Report and traces on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200 api worker web
+
   secrets:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

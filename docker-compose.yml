@@ -16,6 +16,8 @@ x-backend: &backend
     # this machine. In production, list only the proxy's address and don't publish the API port.
     FORWARDED_ALLOW_IPS: "*"
     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    # CI's browser tests run without an API key: TRIAGE_ENABLED=false skips the triage agent.
+    TRIAGE_ENABLED: ${TRIAGE_ENABLED:-true}
     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
 
 services:
