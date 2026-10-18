@@ -24,7 +24,7 @@ export function ProjectHeader() {
   return (
     <div className="flex flex-col gap-4 border-b border-border pb-0">
       <div className="flex flex-col gap-1">
-        <Link href="/projects" className="text-sm text-accent hover:underline">
+        <Link href="/projects" className="text-sm text-link hover:underline">
           ← All projects
         </Link>
         <div className="flex flex-wrap items-center gap-3">

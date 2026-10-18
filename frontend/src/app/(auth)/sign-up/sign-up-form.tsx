@@ -44,7 +44,7 @@ export function SignUpForm() {
         <p className="text-sm text-muted">
           Open the link in the email to confirm your address, then sign in.
         </p>
-        <Link href="/sign-in" className="text-sm text-accent hover:underline">
+        <Link href="/sign-in" className="text-sm text-link hover:underline">
           Back to sign in
         </Link>
       </div>
@@ -81,7 +81,7 @@ export function SignUpForm() {
       </form>
       <p className="text-sm text-muted">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-accent hover:underline">
+        <Link href="/sign-in" className="text-link hover:underline">
           Sign in
         </Link>
       </p>

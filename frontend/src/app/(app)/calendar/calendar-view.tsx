@@ -45,7 +45,7 @@ export function CalendarView() {
             aria-label="Project"
             value={project}
             onChange={(event) => setProject(event.target.value)}
-            className="rounded-md border border-border bg-surface px-2 py-1.5"
+            className="rounded-sm border border-border bg-surface px-2 py-1.5"
           >
             <option value="">All projects</option>
             {projects.map(([id, key]) => (
@@ -62,9 +62,9 @@ export function CalendarView() {
       </div>
       {calendar.isPending ? <Loading /> : null}
       {calendar.isError ? <Alert tone="error">{errorText(calendar.error)}</Alert> : null}
-      <div className="grid grid-cols-7 overflow-hidden rounded-lg border border-border bg-border text-sm" style={{ gap: 1 }}>
+      <div className="grid grid-cols-7 overflow-hidden rounded-sm border border-border bg-border text-sm" style={{ gap: 1 }}>
         {WEEKDAYS.map((day) => (
-          <div key={day} className="bg-background px-2 py-1 text-xs font-medium text-muted">
+          <div key={day} className="bg-subtle px-2 py-1 text-xs font-medium text-muted">
             {day}
           </div>
         ))}
@@ -73,7 +73,7 @@ export function CalendarView() {
           const inMonth = day.getMonth() === month.getMonth();
           return (
             <div key={iso} className={`min-h-24 bg-surface p-1.5 ${inMonth ? "" : "opacity-50"}`}>
-              <div className={`mb-1 text-xs ${iso === today ? "font-semibold text-accent" : "text-muted"}`}>
+              <div className={`mb-1 text-xs ${iso === today ? "font-semibold text-link" : "text-muted"}`}>
                 {day.getDate()}
               </div>
               <ul className="flex flex-col gap-1">
@@ -97,7 +97,7 @@ function DueItem({ ticket }: { ticket: DueTicket }) {
         href={`/projects/${ticket.project_id}/tickets/${ticket.id}`}
         title={ticket.title}
         className={`block truncate rounded border px-1.5 py-0.5 text-xs hover:underline ${
-          late ? "border-red-200 bg-red-50 text-danger" : STATUS_STYLE[ticket.status]
+          late ? "border-danger/40 bg-danger/10 text-danger" : STATUS_STYLE[ticket.status]
         }`}
       >
         <span className="font-mono">{ticket.key}</span> {ticket.title}

@@ -92,7 +92,7 @@ export function TicketsList() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Title, description or number"
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
           />
         </div>
         <FilterSelect
@@ -124,7 +124,7 @@ export function TicketsList() {
               if (event.key === "Enter") event.currentTarget.blur();
             }}
             placeholder="backend"
-            className="w-32 rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="w-32 rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
           />
         </div>
         {isManager && !creating ? <Button onClick={() => setCreating(true)}>New ticket</Button> : null}
@@ -137,9 +137,9 @@ export function TicketsList() {
             type="button"
             aria-pressed={activeStatuses.has(status)}
             onClick={() => toggleStatus(status)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+            className={`rounded-sm border px-3 py-1 text-xs font-medium ${
               activeStatuses.has(status)
-                ? "border-accent bg-accent text-white"
+                ? "border-accent bg-accent text-on-accent"
                 : "border-border bg-surface text-muted hover:text-foreground"
             }`}
           >
@@ -159,7 +159,7 @@ export function TicketsList() {
         </Card>
       ) : null}
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+      <div className="overflow-x-auto rounded-sm border border-border bg-surface">
         {tickets.isPending ? (
           <div className="p-4">
             <Loading />
@@ -190,14 +190,14 @@ export function TicketsList() {
             </thead>
             <tbody className="divide-y divide-border">
               {tickets.data.items.map((ticket) => (
-                <tr key={ticket.id} className="hover:bg-background">
+                <tr key={ticket.id} className="hover:bg-subtle">
                   <td className="whitespace-nowrap px-4 py-2.5 font-mono text-xs text-muted">
                     {ticketKey(project.data.key, ticket.number)}
                   </td>
                   <td className="max-w-md px-4 py-2.5">
                     <Link
                       href={`/projects/${projectId}/tickets/${ticket.id}`}
-                      className="line-clamp-1 font-medium hover:text-accent hover:underline"
+                      className="line-clamp-1 font-medium hover:text-link hover:underline"
                     >
                       {ticket.title}
                     </Link>
@@ -279,7 +279,7 @@ function FilterSelect({
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value || null)}
-        className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+        className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
       >
         <option value="">Any</option>
         {options.map((option) => (

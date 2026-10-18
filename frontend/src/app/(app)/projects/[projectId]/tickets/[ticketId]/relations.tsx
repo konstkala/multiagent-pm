@@ -41,7 +41,7 @@ function ParentTicket({ context, parentId }: { context: TicketContext; parentId:
       Sub-task of{" "}
       <Link
         href={`/projects/${context.project.id}/tickets/${parentId}`}
-        className="font-medium text-accent hover:underline"
+        className="font-medium text-link hover:underline"
       >
         {ticketKey(context.project.key, parent.data.number)} {parent.data.title}
       </Link>
@@ -63,14 +63,14 @@ function SubTasks({ context }: { context: TicketContext }) {
           Sub-tasks{items.length ? ` (${done}/${items.length} done)` : ""}
         </h2>
         {isManager && !adding ? (
-          <button type="button" onClick={() => setAdding(true)} className="text-xs font-medium text-accent hover:underline">
+          <button type="button" onClick={() => setAdding(true)} className="text-xs font-medium text-link hover:underline">
             Add sub-task
           </button>
         ) : null}
       </div>
       {subtasks.isPending ? <Loading /> : null}
       {items.length ? (
-        <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
+        <ul className="divide-y divide-border rounded-sm border border-border bg-surface">
           {items.map((sub) => (
             <li key={sub.id} className="flex items-center gap-3 px-3 py-2">
               <span className="w-16 shrink-0 font-mono text-xs text-muted">
@@ -78,7 +78,7 @@ function SubTasks({ context }: { context: TicketContext }) {
               </span>
               <Link
                 href={`/projects/${project.id}/tickets/${sub.id}`}
-                className="min-w-0 flex-1 truncate text-sm hover:text-accent hover:underline"
+                className="min-w-0 flex-1 truncate text-sm hover:text-link hover:underline"
               >
                 {sub.title}
               </Link>
@@ -162,7 +162,7 @@ function Links({ context }: { context: TicketContext }) {
               <span className="w-24 shrink-0 text-xs text-muted">{LINK_LABEL[link.type][link.direction]}</span>
               <Link
                 href={`/projects/${project.id}/tickets/${link.ticket.id}`}
-                className="min-w-0 flex-1 truncate hover:text-accent hover:underline"
+                className="min-w-0 flex-1 truncate hover:text-link hover:underline"
               >
                 <span className="font-mono text-xs text-muted">{ticketKey(project.key, link.ticket.number)}</span>{" "}
                 {link.ticket.title}
@@ -190,7 +190,7 @@ function Links({ context }: { context: TicketContext }) {
             name="type"
             aria-label="Link type"
             defaultValue="blocks"
-            className="rounded-md border border-border bg-surface px-2 py-1.5 text-sm"
+            className="rounded-sm border border-border bg-surface px-2 py-1.5 text-sm"
           >
             <option value="blocks">Blocks</option>
             <option value="relates_to">Relates to</option>
@@ -200,7 +200,7 @@ function Links({ context }: { context: TicketContext }) {
             aria-label="Ticket number"
             required
             placeholder={`${project.key}-12`}
-            className="w-28 rounded-md border border-border bg-surface px-2 py-1.5 text-sm"
+            className="w-28 rounded-sm border border-border bg-surface px-2 py-1.5 text-sm"
           />
           <Button type="submit" variant="secondary" pending={add.isPending}>
             Link

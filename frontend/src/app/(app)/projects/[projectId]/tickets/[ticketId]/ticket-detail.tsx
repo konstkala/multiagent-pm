@@ -51,7 +51,7 @@ export function TicketDetail() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link href={`/projects/${projectId}`} className="text-sm text-accent hover:underline">
+      <Link href={`/projects/${projectId}`} className="text-sm text-link hover:underline">
         ← Tickets
       </Link>
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
@@ -105,7 +105,7 @@ function Header({ context }: { context: TicketContext }) {
               if (event.key === "Enter") save();
               if (event.key === "Escape") setEditing(false);
             }}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-xl font-semibold outline-none focus:border-accent"
+            className="rounded-sm border border-control bg-surface px-3 py-2 text-xl font-semibold outline-none focus:border-ring"
           />
           <div className="flex gap-2">
             <Button onClick={save} pending={update.isPending}>
@@ -126,7 +126,7 @@ function Header({ context }: { context: TicketContext }) {
                 setTitle(ticket.title);
                 setEditing(true);
               }}
-              className="mt-1.5 shrink-0 text-xs font-normal text-accent hover:underline"
+              className="mt-1.5 shrink-0 text-xs font-normal text-link hover:underline"
             >
               Edit
             </button>
@@ -155,7 +155,7 @@ function Description({ context }: { context: TicketContext }) {
               setText(ticket.description);
               setEditing(true);
             }}
-            className="text-xs text-accent hover:underline"
+            className="text-xs text-link hover:underline"
           >
             Edit
           </button>
@@ -169,7 +169,7 @@ function Description({ context }: { context: TicketContext }) {
             rows={8}
             maxLength={20000}
             onChange={(event) => setText(event.target.value)}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
           />
           <div className="flex gap-2">
             <Button
@@ -188,7 +188,7 @@ function Description({ context }: { context: TicketContext }) {
         </div>
       ) : ticket.description ? (
         // Plain text with line breaks kept: user text is never rendered as HTML.
-        <p className="whitespace-pre-wrap break-words rounded-lg border border-border bg-surface p-4 text-sm leading-relaxed">
+        <p className="whitespace-pre-wrap break-words rounded-sm border border-border bg-surface p-4 text-sm leading-relaxed">
           {ticket.description}
         </p>
       ) : (

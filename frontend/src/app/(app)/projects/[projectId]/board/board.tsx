@@ -137,13 +137,13 @@ function Column({ status, count, children }: { status: Status; count: number; ch
     <section
       ref={setNodeRef}
       aria-label={STATUS_LABEL[status]}
-      className={`flex min-h-64 flex-col gap-2 rounded-lg border p-2 transition-colors ${
-        isOver ? "border-accent bg-accent/5" : "border-border bg-background"
+      className={`flex min-h-64 flex-col gap-2 rounded-sm border p-2 transition-colors ${
+        isOver ? "border-accent bg-accent/5" : "border-border bg-subtle"
       }`}
     >
       <h2 className="flex items-center justify-between px-1 text-xs font-semibold uppercase tracking-wide text-muted">
         {STATUS_LABEL[status]}
-        <span className="rounded-full bg-surface px-2 py-0.5 font-medium">{count}</span>
+        <span className="rounded-sm bg-surface px-2 py-0.5 font-medium">{count}</span>
       </h2>
       {children}
     </section>
@@ -175,13 +175,13 @@ function Card({
       style={{ transform: CSS.Translate.toString(transform) }}
       {...attributes}
       {...listeners}
-      className={`flex flex-col gap-2 rounded-md border border-border bg-surface p-3 shadow-sm ${
+      className={`flex flex-col gap-2 rounded-sm border border-border bg-surface p-3 shadow-sm ${
         draggable ? "cursor-grab active:cursor-grabbing" : ""
       } ${isDragging ? "z-10 opacity-80 shadow-lg" : ""}`}
     >
       <Link
         href={`/projects/${projectId}/tickets/${ticket.id}`}
-        className="line-clamp-3 text-sm font-medium hover:text-accent hover:underline"
+        className="line-clamp-3 text-sm font-medium hover:text-link hover:underline"
       >
         {ticket.title}
       </Link>

@@ -60,7 +60,7 @@ export function Comments({ context }: { context: TicketContext }) {
           maxLength={10000}
           placeholder="Add a comment…"
           onChange={(event) => setBody(event.target.value)}
-          className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+          className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
         />
         {add.isError ? <Alert tone="error">{errorText(add.error)}</Alert> : null}
         <div>
@@ -98,14 +98,14 @@ function CommentItem({ comment, context }: { comment: Comment; context: TicketCo
   return (
     <li className="flex gap-3">
       <Avatar name={author} />
-      <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-border bg-surface p-3">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-sm border border-border bg-surface p-3">
         <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
           <span className="font-medium text-foreground">{author}</span>
           <span>{formatTime(comment.created_at)}</span>
           {comment.edited_at ? <span>(edited)</span> : null}
           <span className="ml-auto flex gap-3">
             {isMine && !editing ? (
-              <button type="button" onClick={() => setEditing(true)} className="hover:text-accent">
+              <button type="button" onClick={() => setEditing(true)} className="hover:text-link">
                 Edit
               </button>
             ) : null}
@@ -129,7 +129,7 @@ function CommentItem({ comment, context }: { comment: Comment; context: TicketCo
               rows={3}
               maxLength={10000}
               onChange={(event) => setText(event.target.value)}
-              className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+              className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
             />
             <div className="flex gap-2">
               <Button disabled={!text.trim()} pending={edit.isPending} onClick={() => edit.mutate()}>

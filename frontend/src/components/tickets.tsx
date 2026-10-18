@@ -12,7 +12,7 @@ import {
 export function StatusPill({ status }: { status: Status }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
+      className={`inline-flex shrink-0 items-center rounded-sm border px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
     >
       {STATUS_LABEL[status]}
     </span>
@@ -34,7 +34,7 @@ export function Avatar({ name }: { name: string }) {
   return (
     <span
       title={name}
-      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold text-accent"
+      className="inline-flex size-6 shrink-0 items-center justify-center rounded-sm bg-accent/10 text-[10px] font-semibold text-link"
     >
       {initials || "?"}
     </span>
@@ -69,7 +69,7 @@ export function Points({ points }: { points: number | null }) {
   return (
     <span
       title={`${points} story points`}
-      className="inline-flex min-w-5 justify-center rounded bg-background px-1 text-xs font-medium text-muted"
+      className="inline-flex min-w-5 justify-center rounded bg-subtle px-1 text-xs font-medium text-muted"
     >
       {points}
     </span>

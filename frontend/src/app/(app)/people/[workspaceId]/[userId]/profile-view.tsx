@@ -36,7 +36,7 @@ export function ProfileView() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       {isManager ? (
-        <Link href={`/people/${workspaceId}`} className="text-sm text-accent hover:underline">
+        <Link href={`/people/${workspaceId}`} className="text-sm text-link hover:underline">
           ← People
         </Link>
       ) : null}
@@ -86,7 +86,7 @@ function ProfileSummary({ profile }: { profile: Profile }) {
           <li
             key={skill.name}
             title={LEVEL_LABEL[skill.level]}
-            className="rounded-full border border-border bg-background px-2.5 py-1 text-xs"
+            className="rounded-sm border border-border bg-subtle px-2.5 py-1 text-xs"
           >
             {skill.name} <span className="text-muted">· {skill.level}/5</span>
           </li>
@@ -185,7 +185,7 @@ function CvImports({ workspaceId, userId }: { workspaceId: string; userId: strin
           An AI reads the PDF and drafts the profile. You review it before anything is saved. The CV
           is deleted as soon as it has been read.
         </p>
-        <label className="w-fit cursor-pointer rounded-md border border-border px-3.5 py-2 text-sm font-medium hover:bg-background">
+        <label className="w-fit cursor-pointer rounded-sm border border-border px-3.5 py-2 text-sm font-medium hover:bg-subtle">
           {upload.isPending ? "Uploading…" : "Choose a PDF"}
           <input
             ref={input}

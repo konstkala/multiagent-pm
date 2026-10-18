@@ -32,8 +32,8 @@ export function RangePicker({ value, onChange }: { value: DateRange; onChange: (
           type="button"
           aria-pressed={preset === days}
           onClick={() => onChange(lastDays(days))}
-          className={`rounded-md border px-2.5 py-1 ${
-            preset === days ? "border-accent bg-accent text-white" : "border-border bg-surface hover:bg-background"
+          className={`rounded-sm border px-2.5 py-1 ${
+            preset === days ? "border-accent bg-accent text-on-accent" : "border-border bg-surface hover:bg-subtle"
           }`}
         >
           {days} days
@@ -46,7 +46,7 @@ export function RangePicker({ value, onChange }: { value: DateRange; onChange: (
           value={value.start}
           max={value.end}
           onChange={(event) => event.target.value && onChange({ ...value, start: event.target.value })}
-          className="rounded-md border border-border bg-surface px-2 py-1 text-foreground"
+          className="rounded-sm border border-border bg-surface px-2 py-1 text-foreground"
         />
       </label>
       <label className="flex items-center gap-1 text-muted">
@@ -56,7 +56,7 @@ export function RangePicker({ value, onChange }: { value: DateRange; onChange: (
           value={value.end}
           min={value.start}
           onChange={(event) => event.target.value && onChange({ ...value, end: event.target.value })}
-          className="rounded-md border border-border bg-surface px-2 py-1 text-foreground"
+          className="rounded-sm border border-border bg-surface px-2 py-1 text-foreground"
         />
       </label>
     </div>

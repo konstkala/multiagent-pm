@@ -39,13 +39,13 @@ function WorkspaceSection({ workspace }: { workspace: Workspace }) {
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">{workspace.name}</h2>
           <Badge>{workspace.role}</Badge>
-          <Link href={`/people/${workspace.id}`} className="text-sm text-accent hover:underline">
+          <Link href={`/people/${workspace.id}`} className="text-sm text-link hover:underline">
             People
           </Link>
           {me.data ? (
             <Link
               href={`/people/${workspace.id}/${me.data.id}`}
-              className="text-sm text-accent hover:underline"
+              className="text-sm text-link hover:underline"
             >
               My profile
             </Link>
@@ -72,7 +72,7 @@ function WorkspaceSection({ workspace }: { workspace: Workspace }) {
           <li key={project.id}>
             <Link
               href={`/projects/${project.id}`}
-              className="flex h-full flex-col gap-2 rounded-lg border border-border bg-surface p-4 hover:border-accent"
+              className="flex h-full flex-col gap-2 rounded-sm border border-border bg-surface p-4 hover:border-accent"
             >
               <span className="font-mono text-xs text-muted">{project.key}</span>
               <span className="font-medium">{project.name}</span>

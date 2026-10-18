@@ -65,7 +65,7 @@ export function Attachments({ context }: { context: TicketContext }) {
         <h2 className="text-sm font-semibold">
           Files{attachments.data ? ` (${attachments.data.length})` : ""}
         </h2>
-        <label className="cursor-pointer text-xs font-medium text-accent hover:underline">
+        <label className="cursor-pointer text-xs font-medium text-link hover:underline">
           {upload.isPending ? "Uploading…" : "Attach a file"}
           <input
             ref={input}
@@ -111,7 +111,7 @@ function FileRow({
 }) {
   const href = `/api/attachments/${file.id}/download`;
   return (
-    <li className="flex items-center gap-3 rounded-lg border border-border bg-surface p-2">
+    <li className="flex items-center gap-3 rounded-sm border border-border bg-surface p-2">
       {IMAGE.test(file.content_type) ? (
         // eslint-disable-next-line @next/next/no-img-element -- private, auth-checked file; not optimisable
         <img
@@ -120,12 +120,12 @@ function FileRow({
           className="size-12 shrink-0 rounded object-cover"
         />
       ) : (
-        <span className="flex size-12 shrink-0 items-center justify-center rounded bg-background text-[10px] font-semibold uppercase text-muted">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded bg-subtle text-[10px] font-semibold uppercase text-muted">
           {file.filename.split(".").pop()}
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <a href={href} className="block truncate text-sm font-medium hover:text-accent hover:underline">
+        <a href={href} className="block truncate text-sm font-medium hover:text-link hover:underline">
           {file.filename}
         </a>
         <p className="truncate text-xs text-muted">

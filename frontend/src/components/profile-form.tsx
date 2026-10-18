@@ -86,7 +86,7 @@ export function ProfileForm({ initial, submitLabel, pending, onSubmit, secondary
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium">Skills</legend>
         {skills.map((skill, index) => (
-          <div key={index} className="flex flex-col gap-1 rounded-md border border-border p-2">
+          <div key={index} className="flex flex-col gap-1 rounded-sm border border-border p-2">
             <div className="flex gap-2">
               <input
                 aria-label="Skill name"
@@ -141,7 +141,7 @@ export function ProfileForm({ initial, submitLabel, pending, onSubmit, secondary
 }
 
 const inputClass =
-  "rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
+  "rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring";
 
 function Labelled({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
   return (

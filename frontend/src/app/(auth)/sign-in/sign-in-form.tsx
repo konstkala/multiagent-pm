@@ -71,7 +71,7 @@ export function SignInForm() {
           {/* A full page navigation: the browser must visit Google, not fetch it. */}
           <a
             href="/api/auth/google/start"
-            className="inline-flex items-center justify-center rounded-md border border-border bg-surface px-3.5 py-2 text-sm font-medium hover:bg-background"
+            className="inline-flex items-center justify-center rounded-sm border border-border bg-surface px-3.5 py-2 text-sm font-medium hover:bg-subtle"
           >
             Continue with Google
           </a>
@@ -94,10 +94,10 @@ export function SignInForm() {
       </form>
 
       <div className="flex justify-between text-sm">
-        <Link href="/forgot-password" className="text-accent hover:underline">
+        <Link href="/forgot-password" className="text-link hover:underline">
           Forgot password?
         </Link>
-        <Link href="/sign-up" className="text-accent hover:underline">
+        <Link href="/sign-up" className="text-link hover:underline">
           Create an account
         </Link>
       </div>

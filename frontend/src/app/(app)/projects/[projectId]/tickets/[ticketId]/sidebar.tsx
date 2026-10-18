@@ -209,7 +209,7 @@ export function Sidebar({ context }: { context: TicketContext }) {
 }
 
 const selectClass =
-  "w-full rounded-md border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-accent disabled:opacity-60";
+  "w-full rounded-sm border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-ring disabled:opacity-60";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
   return (
@@ -286,7 +286,7 @@ function ReturnTicket({ context }: { context: TicketContext }) {
           rows={3}
           maxLength={2000}
           onChange={(event) => setReason(event.target.value)}
-          className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+          className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
         />
         {giveBack.isError ? <Alert tone="error">{errorText(giveBack.error)}</Alert> : null}
         <div className="flex gap-2">

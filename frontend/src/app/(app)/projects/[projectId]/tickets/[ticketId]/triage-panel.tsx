@@ -133,7 +133,7 @@ function Question({ run, context }: { run: TriageRun; context: TicketContext }) 
             rows={3}
             maxLength={2000}
             onChange={(event) => setText(event.target.value)}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+            className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
           />
           {answer.isError ? <Alert tone="error">{errorText(answer.error)}</Alert> : null}
           <div className="flex gap-2">
@@ -329,7 +329,7 @@ function DuplicateLink({ proposal, context }: { proposal: Proposal; context: Tic
   return (
     <Link
       href={`/projects/${project.id}/tickets/${proposal.duplicate_of_id}`}
-      className="text-sm hover:text-accent hover:underline"
+      className="text-sm hover:text-link hover:underline"
     >
       <span className="font-mono text-xs text-muted">
         {ticketKey(project.key, proposal.duplicate_of)}
@@ -431,4 +431,4 @@ async function refreshTicket(
 }
 
 const inputClass =
-  "w-full rounded-md border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-accent";
+  "w-full rounded-sm border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-ring";

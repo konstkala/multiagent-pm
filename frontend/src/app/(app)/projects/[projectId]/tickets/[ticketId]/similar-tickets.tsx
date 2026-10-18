@@ -28,7 +28,7 @@ export function SimilarTickets({ context }: { context: TicketContext }) {
           <li key={other.id} className="flex flex-col gap-1">
             <Link
               href={`/projects/${project.id}/tickets/${other.id}`}
-              className="line-clamp-2 text-sm hover:text-accent hover:underline"
+              className="line-clamp-2 text-sm hover:text-link hover:underline"
             >
               <span className="font-mono text-xs text-muted">{ticketKey(project.key, other.number)}</span>{" "}
               {other.title}

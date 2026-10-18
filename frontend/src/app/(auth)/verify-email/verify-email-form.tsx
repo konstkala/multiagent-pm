@@ -38,7 +38,7 @@ export function VerifyEmailForm() {
       {done ? (
         <>
           <Alert tone="success">Email confirmed. You can sign in now.</Alert>
-          <Link href="/sign-in" className="text-sm text-accent hover:underline">
+          <Link href="/sign-in" className="text-sm text-link hover:underline">
             Sign in
           </Link>
         </>

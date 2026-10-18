@@ -83,7 +83,7 @@ export function AgentMetrics({ projectId, range }: { projectId: string; range: D
 
 function Rate({ label, value }: { label: string; value: number | null }) {
   return (
-    <div className="rounded-md border border-border p-3">
+    <div className="rounded-sm border border-border p-3">
       <div className="text-xs text-muted">{label}</div>
       <div className="text-xl font-semibold">{value === null ? "–" : `${Math.round(value * 100)}%`}</div>
     </div>

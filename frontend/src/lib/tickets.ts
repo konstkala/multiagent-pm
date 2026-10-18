@@ -26,18 +26,18 @@ export const STATUS_LABEL: Record<Status, string> = {
 
 // Semantic colours: they say where work stands, separate from the accent colour.
 export const STATUS_STYLE: Record<Status, string> = {
-  todo: "bg-slate-100 text-slate-700 border-slate-200",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
-  in_review: "bg-amber-50 text-amber-800 border-amber-200",
-  done: "bg-green-50 text-green-700 border-green-200",
-  cancelled: "bg-zinc-100 text-zinc-500 border-zinc-200 line-through",
+  todo: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700",
+  in_progress: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-900",
+  in_review: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-900",
+  done: "bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-900",
+  cancelled: "bg-zinc-100 text-zinc-500 border-zinc-200 line-through dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800",
 };
 
 export const PRIORITY_STYLE: Record<Priority, string> = {
-  urgent: "text-red-700",
-  high: "text-orange-700",
-  medium: "text-slate-700",
-  low: "text-slate-500",
+  urgent: "text-red-700 dark:text-red-400",
+  high: "text-orange-700 dark:text-orange-400",
+  medium: "text-slate-700 dark:text-slate-300",
+  low: "text-slate-500 dark:text-slate-400",
 };
 
 /** A form value narrowed to one of the allowed options, or null. */

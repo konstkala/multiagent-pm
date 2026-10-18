@@ -56,7 +56,7 @@ export function MyWorkView() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="rounded-sm border border-border bg-surface p-4">
       <div className="text-xs text-muted">{label}</div>
       <div className="mt-1 text-xl font-semibold">{value}</div>
     </div>
@@ -72,7 +72,7 @@ function TicketList({ title, tickets, empty }: { title: string; tickets: MyTicke
             <li key={ticket.id} className="flex items-center justify-between gap-3">
               <Link
                 href={`/projects/${ticket.project_id}/tickets/${ticket.id}`}
-                className="min-w-0 truncate text-sm hover:text-accent hover:underline"
+                className="min-w-0 truncate text-sm hover:text-link hover:underline"
               >
                 <span className="font-mono text-xs text-muted">{ticket.key}</span> {ticket.title}
               </Link>

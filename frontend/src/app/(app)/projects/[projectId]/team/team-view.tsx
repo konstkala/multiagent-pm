@@ -95,7 +95,7 @@ function MemberRow({
               onChange={(event) =>
                 changeRole.mutate(event.target.value === "manager" ? "manager" : "employee")
               }
-              className="rounded-md border border-border bg-surface px-2 py-1 text-xs"
+              className="rounded-sm border border-border bg-surface px-2 py-1 text-xs"
             >
               <option value="manager">manager</option>
               <option value="employee">employee</option>

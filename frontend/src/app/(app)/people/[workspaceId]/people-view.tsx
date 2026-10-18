@@ -22,7 +22,7 @@ export function PeopleView() {
           {forbidden ? "Only managers can see everyone's profiles." : errorText(people.error)}
         </Alert>
         {forbidden && me.data ? (
-          <Link href={`/people/${workspaceId}/${me.data.id}`} className="text-sm text-accent hover:underline">
+          <Link href={`/people/${workspaceId}/${me.data.id}`} className="text-sm text-link hover:underline">
             See your own profile
           </Link>
         ) : null}
@@ -32,16 +32,16 @@ export function PeopleView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/projects" className="text-sm text-accent hover:underline">
+      <Link href="/projects" className="text-sm text-link hover:underline">
         ← Projects
       </Link>
       <h1 className="text-2xl font-semibold tracking-tight">People</h1>
-      <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
+      <ul className="divide-y divide-border rounded-sm border border-border bg-surface">
         {people.data.map((person) => (
           <li key={person.user_id}>
             <Link
               href={`/people/${workspaceId}/${person.user_id}`}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-background"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-subtle"
             >
               <Avatar name={person.display_name} />
               <div className="min-w-0 flex-1">

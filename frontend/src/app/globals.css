@@ -1,34 +1,82 @@
 @import "tailwindcss";
 
-/* One light palette for now; every colour comes from these tokens. */
+/* Design tokens for "C · Paper" (GitHub-like, text-first). Light by default, dark under .dark.
+   Every colour in the app comes from these. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #f6f7f9;
+  --background: #ffffff;
   --surface: #ffffff;
-  --foreground: #16181d;
-  --muted: #5c6370;
-  --border: #e2e5ea;
-  --accent: #3b5bdb;
-  --accent-strong: #2f4bbf;
-  --danger: #c92a2a;
-  --success: #2b8a3e;
+  --subtle: #f6f8fa; /* table heads, hovers, panel headers */
+  --foreground: #1c2128;
+  --muted: #57606a;
+  --border: #d8dee4;
+  --control: #d0d7de; /* borders of inputs and secondary buttons */
+  --accent: #1a7f37; /* primary actions */
+  --accent-strong: #166b2e;
+  --on-accent: #ffffff;
+  --link: #0b57b0;
+  --ring: #0b57b0;
+  --danger: #cf222e;
+  --success: #1a7f37;
+  --bot: #eef5fe; /* agent entries */
+  --bot-border: #b8d4f5;
+  --radius: 4px;
+}
+
+.dark {
+  --background: #0d1117;
+  --surface: #0d1117;
+  --subtle: #151b23;
+  --foreground: #e6edf3;
+  --muted: #9198a1;
+  --border: #30363d;
+  --control: #3d444d;
+  --accent: #238636;
+  --accent-strong: #2ea043;
+  --on-accent: #ffffff;
+  --link: #4493f8;
+  --ring: #4493f8;
+  --danger: #f85149;
+  --success: #3fb950;
+  --bot: #0c2340;
+  --bot-border: #1f4f85;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-control: var(--control);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-link: var(--link);
+  --color-ring: var(--ring);
   --color-danger: var(--danger);
   --color-success: var(--success);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bot: var(--bot);
+  --color-bot-border: var(--bot-border);
+  --font-sans: var(--font-public-sans);
+  --font-mono: var(--font-jetbrains-mono);
+  /* Sharp corners everywhere: even Tailwind's "rounded-sm" is 4 px. */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-public-sans), system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }

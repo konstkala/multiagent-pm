@@ -44,7 +44,7 @@ export function ForgotPasswordForm() {
           </form>
         </>
       )}
-      <Link href="/sign-in" className="text-sm text-accent hover:underline">
+      <Link href="/sign-in" className="text-sm text-link hover:underline">
         Back to sign in
       </Link>
     </div>

@@ -1,10 +1,10 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 
 const buttonStyles = {
-  primary: "bg-accent text-white hover:bg-accent-strong disabled:opacity-60",
+  primary: "bg-accent text-on-accent hover:bg-accent-strong disabled:opacity-60",
   secondary:
-    "bg-surface text-foreground border border-border hover:bg-background disabled:opacity-60",
-  danger: "bg-surface text-danger border border-border hover:bg-red-50 disabled:opacity-60",
+    "bg-subtle text-foreground border border-control hover:bg-border disabled:opacity-60",
+  danger: "bg-surface text-danger border border-control hover:bg-subtle disabled:opacity-60",
 } as const;
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -25,7 +25,7 @@ export function Button({
       {...props}
       disabled={disabled || pending}
       aria-busy={pending}
-      className={`inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${buttonStyles[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-sm px-3.5 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${buttonStyles[variant]} ${className}`}
     >
       {pending ? "Working…" : children}
     </button>
@@ -45,7 +45,7 @@ export function TextField({ label, hint, id, name, ...props }: FieldProps) {
         id={fieldId}
         name={name}
         {...props}
-        className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
       />
       {hint ? <p className="text-xs text-muted">{hint}</p> : null}
     </div>
@@ -65,7 +65,7 @@ export function Select({ label, id, name, children, ...props }: SelectProps) {
         id={fieldId}
         name={name}
         {...props}
-        className="rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+        className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
       >
         {children}
       </select>
@@ -75,12 +75,12 @@ export function Select({ label, id, name, children, ...props }: SelectProps) {
 
 export function Alert({ tone, children }: { tone: "error" | "success" | "info"; children: ReactNode }) {
   const tones = {
-    error: "border-red-200 bg-red-50 text-danger",
-    success: "border-green-200 bg-green-50 text-success",
-    info: "border-border bg-background text-muted",
+    error: "border-danger/40 bg-danger/10 text-danger",
+    success: "border-success/40 bg-success/10 text-success",
+    info: "border-border bg-subtle text-muted",
   };
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={`rounded-md border px-3 py-2 text-sm ${tones[tone]}`}>
+    <div role={tone === "error" ? "alert" : "status"} className={`rounded-sm border px-3 py-2 text-sm ${tones[tone]}`}>
       {children}
     </div>
   );
@@ -88,7 +88,7 @@ export function Alert({ tone, children }: { tone: "error" | "success" | "info"; 
 
 export function Card({ title, actions, children }: { title?: string; actions?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-lg border border-border bg-surface">
+    <section className="rounded-sm border border-border bg-surface">
       {title ? (
         <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <h2 className="text-sm font-semibold">{title}</h2>
@@ -102,7 +102,7 @@ export function Card({ title, actions, children }: { title?: string; actions?: R
 
 export function Badge({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-border bg-background px-2 py-0.5 text-xs font-medium text-muted">
+    <span className="rounded-sm border border-border bg-subtle px-2 py-0.5 text-xs font-medium text-muted">
       {children}
     </span>
   );

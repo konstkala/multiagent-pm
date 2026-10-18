@@ -41,7 +41,7 @@ export function ResetPasswordForm() {
     return (
       <div className="flex flex-col gap-4">
         <Alert tone="success">Password changed. You&apos;ve been signed out everywhere.</Alert>
-        <Link href="/sign-in" className="text-sm text-accent hover:underline">
+        <Link href="/sign-in" className="text-sm text-link hover:underline">
           Sign in with your new password
         </Link>
       </div>
