@@ -56,7 +56,7 @@ export function MyWorkView() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-sm border border-border bg-surface p-4">
+    <div className="border-l-2 border-border pl-4">
       <div className="text-xs text-muted">{label}</div>
       <div className="mt-1 text-xl font-semibold">{value}</div>
     </div>

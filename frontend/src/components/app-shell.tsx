@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {me.data ? <Account name={me.data.display_name} /> : null}
       </aside>
 
-      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-4 py-8 md:px-8">
+      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-5 py-8 md:px-12 md:py-12">
         {me.isPending ? <Loading /> : null}
         {me.isError ? <Alert tone="error">{errorText(me.error)}</Alert> : null}
         {me.data ? children : null}

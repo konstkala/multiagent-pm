@@ -137,8 +137,8 @@ function Column({ status, count, children }: { status: Status; count: number; ch
     <section
       ref={setNodeRef}
       aria-label={STATUS_LABEL[status]}
-      className={`flex min-h-64 flex-col gap-2 rounded-sm border p-2 transition-colors ${
-        isOver ? "border-accent bg-accent/5" : "border-border bg-subtle"
+      className={`flex min-h-64 flex-col gap-2 rounded-sm p-2 transition-colors ${
+        isOver ? "bg-accent/10 outline outline-1 outline-accent" : "bg-subtle"
       }`}
     >
       <h2 className="flex items-center justify-between px-1 text-xs font-semibold uppercase tracking-wide text-muted">
@@ -173,7 +173,7 @@ function Card({
     <article
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform) }}
-      className={`relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-3 shadow-sm ${
+      className={`relative flex flex-col gap-2 rounded-sm border border-border bg-surface p-3 ${
         isDragging ? "z-10 opacity-80 shadow-lg" : ""
       }`}
     >

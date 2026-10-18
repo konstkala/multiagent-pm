@@ -48,6 +48,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 - Tests use a throwaway `pm_test` database built from the migrations; each test is rolled back
 - Check (run before saying done): `uv run ruff check --fix . && uv run ruff format . && uv run pyright && uv run pytest`
 - Smoke the running stack (from `backend/`, after `docker compose up -d --build --wait`): `uv run python -m scripts.smoke` (or the `/smoke` skill). Real Haiku calls, about $0.003
+- Demo data (from `backend/`, stack running): `uv run python -m scripts.seed_demo`. Sign in as `demo-manager@example.com`, password `correct horse battery`. Safe to re-run
 - Pre-commit hooks, once per clone: `uv tool install pre-commit==4.6.2` then `pre-commit install`
 - Run the images CI published: `TAG=sha-<commit> docker compose -f docker-compose.yml -f compose.release.yml up -d --wait`
 - CI: `.github/workflows/` (ci, images, codeql, e2e). Watch a run: `gh run watch`. Actions are pinned by SHA, at least 2 weeks old

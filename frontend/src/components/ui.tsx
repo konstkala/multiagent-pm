@@ -99,19 +99,20 @@ export function Card({
   children: ReactNode;
 }) {
   const bot = tone === "bot";
+  // Plain cards are just a hairline and white space; only agent entries get a tinted header.
   return (
     <section className={`rounded-lg border ${bot ? "border-bot-border" : "border-border"} bg-surface`}>
       {title ? (
         <header
-          className={`flex items-center justify-between gap-3 border-b px-4 py-3 ${
-            bot ? "border-bot-border bg-bot" : "border-border"
+          className={`flex items-center justify-between gap-3 px-5 py-3.5 ${
+            bot ? "border-b border-bot-border bg-bot" : "pb-0"
           }`}
         >
           <h2 className="text-sm font-semibold">{title}</h2>
           {actions}
         </header>
       ) : null}
-      <div className="p-4">{children}</div>
+      <div className="p-5">{children}</div>
     </section>
   );
 }

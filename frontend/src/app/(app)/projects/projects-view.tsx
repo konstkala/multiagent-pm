@@ -72,7 +72,7 @@ function WorkspaceSection({ workspace }: { workspace: Workspace }) {
           <li key={project.id}>
             <Link
               href={`/projects/${project.id}`}
-              className="flex h-full flex-col gap-2 rounded-sm border border-border bg-surface p-4 hover:border-accent"
+              className="flex h-full flex-col gap-2 rounded-sm border border-border bg-surface p-4 hover:border-control"
             >
               <span className="font-mono text-xs text-muted">{project.key}</span>
               <span className="font-medium">{project.name}</span>

@@ -113,7 +113,7 @@ function TeamKpis({ data, isManager }: { data: Dashboard; isManager: boolean }) 
 
 function Stat({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="rounded-sm border border-border bg-surface p-4" title={hint}>
+    <div className="border-l-2 border-border pl-4" title={hint}>
       <div className="text-xs text-muted">{label}</div>
       <div className="mt-1 text-xl font-semibold">{children}</div>
     </div>

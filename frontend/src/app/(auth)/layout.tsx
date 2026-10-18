@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <Link href="/" className="text-center text-lg font-semibold tracking-tight">
           Multiagent PM
         </Link>
-        <div className="rounded-sm border border-border bg-surface p-6 shadow-sm">{children}</div>
+        <div className="rounded-sm border border-border bg-surface p-8">{children}</div>
       </div>
     </main>
   );
