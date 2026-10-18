@@ -83,9 +83,13 @@ services:
   worker:
     <<: *backend
     command: ["python", "-m", "app.worker"]
-    # The image's health check calls the API's /health; a worker serves no HTTP.
+    # A worker serves no HTTP: its loop touches a heartbeat file, and this checks it's fresh.
     healthcheck:
-      disable: true
+      test: ["CMD", "python", "-m", "app.healthcheck"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
     # A job in progress gets time to finish after SIGTERM before Docker kills the process.
     stop_grace_period: 60s
     depends_on:

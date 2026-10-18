@@ -7,6 +7,7 @@ import time
 from collections.abc import Awaitable, Callable, Mapping
 from contextlib import AbstractAsyncContextManager, suppress
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,7 @@ from app.core.config import settings
 from app.core.llm import LLMClient, create_llm_client
 from app.core.logging import configure_logging, log_fields, run_id_var
 from app.db.session import SessionLocal, engine
+from app.healthcheck import HEARTBEAT
 from app.services import assignment, cv_imports, jobs, triage, triage_queue
 from app.services.storage import get_storage
 
@@ -30,14 +32,17 @@ class Worker:
         sessions: SessionFactory,
         handlers: Mapping[str, Handler],
         poll_interval: float = 2.0,
+        heartbeat: Path = HEARTBEAT,
     ) -> None:
         self._sessions = sessions
         self._handlers = handlers
         self._poll_interval = poll_interval
+        self._heartbeat = heartbeat
 
     async def run(self, stop: asyncio.Event) -> None:
         logger.info("worker.started", extra=log_fields(kinds=sorted(self._handlers)))
         while not stop.is_set():
+            self._heartbeat.touch()  # liveness for app/healthcheck.py
             if not await self.run_once():
                 # Nothing to do: sleep, but wake at once on shutdown.
                 with suppress(TimeoutError):

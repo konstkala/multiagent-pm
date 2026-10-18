@@ -1,9 +1,12 @@
 import asyncio
 import json
 import logging
+import os
+import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -11,18 +14,23 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from app.db.models import Job, JobStatus
+from app.healthcheck import worker_is_healthy
 from app.services import jobs
 from app.worker import Handler, Worker
 
 pytestmark = pytest.mark.db
 
 
-def worker_for(session: AsyncSession, handlers: dict[str, Handler]) -> Worker:
+def worker_for(
+    session: AsyncSession, handlers: dict[str, Handler], heartbeat: Path | None = None
+) -> Worker:
     @asynccontextmanager
     async def shared() -> AsyncGenerator[AsyncSession]:
         yield session  # tests share one rolled-back session
 
-    return Worker(shared, handlers, poll_interval=0.01)
+    if heartbeat is None:
+        return Worker(shared, handlers, poll_interval=0.01)
+    return Worker(shared, handlers, poll_interval=0.01, heartbeat=heartbeat)
 
 
 async def add_job(session: AsyncSession, kind: str = "noop", **fields: Any) -> Job:
@@ -169,3 +177,22 @@ async def test_worker_loop_stops_when_asked(db_session: AsyncSession) -> None:
     stop.set()
 
     await asyncio.wait_for(task, timeout=1)  # returns promptly, no hang
+
+
+async def test_worker_loop_beats_so_its_health_check_passes(
+    db_session: AsyncSession, tmp_path: Path
+) -> None:
+    heartbeat = tmp_path / "worker-heartbeat"
+    stop = asyncio.Event()
+    task = asyncio.create_task(worker_for(db_session, {}, heartbeat=heartbeat).run(stop))
+    await asyncio.sleep(0.05)
+    stop.set()
+    await task
+    alive = worker_is_healthy(heartbeat)
+
+    stale = time.time() - 600
+    os.utime(heartbeat, (stale, stale))  # a worker stuck for 10 minutes
+
+    assert alive
+    assert not worker_is_healthy(heartbeat)
+    assert not worker_is_healthy(tmp_path / "never-started")
