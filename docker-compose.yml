@@ -37,7 +37,7 @@ services:
 
   # Fake inbox for development: every email the app sends shows up at http://localhost:8025.
   mailpit:
-    image: axllent/mailpit:v1.29
+    image: axllent/mailpit:v1.30
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # web inbox
