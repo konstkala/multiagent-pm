@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: install dependencies exactly as locked. Rebuilt only when the lockfile changes.
-FROM node:24-slim AS deps
+FROM node:25-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
 # Stage 2: build. API_URL is baked into the proxy config at build time (see next.config.ts).
-FROM node:24-slim AS build
+FROM node:25-slim AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -17,7 +17,7 @@ ENV API_URL=$API_URL \
 RUN npm run build
 
 # Stage 3: the image we ship: the standalone server, its static files, nothing else.
-FROM node:24-slim AS runtime
+FROM node:25-slim AS runtime
 # Security fixes released since the base image was built (Trivy found a fixable CRITICAL
 # in perl-base). Production pins the base by digest and lets Dependabot move it.
 RUN apt-get update && apt-get upgrade -y --no-install-recommends \
