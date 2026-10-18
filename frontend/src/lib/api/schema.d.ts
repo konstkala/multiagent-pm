@@ -605,6 +605,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tickets/{ticket_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Events
+         * @description The ticket's history: creation, status moves, assignee changes.
+         */
+        get: operations["list_events_tickets__ticket_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tickets/{ticket_id}/comments": {
         parameters: {
             query?: never;
@@ -1703,6 +1723,34 @@ export interface components {
             assignee_id?: string | null;
             /** Parent Id */
             parent_id?: string | null;
+        };
+        /**
+         * TicketEventKind
+         * @enum {string}
+         */
+        TicketEventKind: "created" | "status" | "assignee";
+        /**
+         * TicketEventRead
+         * @description One line of a ticket's history. Assignee events carry display names, not ids.
+         */
+        TicketEventRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["TicketEventKind"];
+            /** Actor Name */
+            actor_name: string | null;
+            /** From Value */
+            from_value: string | null;
+            /** To Value */
+            to_value: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** TicketPage */
         TicketPage: {
@@ -4184,6 +4232,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimilarTickets"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_events_tickets__ticket_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketEventRead"][];
                 };
             };
             /** @description Forbidden */

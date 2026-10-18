@@ -3185,6 +3185,89 @@
         }
       }
     },
+    "/tickets/{ticket_id}/events": {
+      "get": {
+        "tags": [
+          "tickets"
+        ],
+        "summary": "List Events",
+        "description": "The ticket's history: creation, status moves, assignee changes.",
+        "operationId": "list_events_tickets__ticket_id__events_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketEventRead"
+                  },
+                  "title": "Response List Events Tickets  Ticket Id  Events Get"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/tickets/{ticket_id}/comments": {
       "get": {
         "tags": [
@@ -7144,6 +7227,76 @@
           "title"
         ],
         "title": "TicketCreate"
+      },
+      "TicketEventKind": {
+        "type": "string",
+        "enum": [
+          "created",
+          "status",
+          "assignee"
+        ],
+        "title": "TicketEventKind"
+      },
+      "TicketEventRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TicketEventKind"
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name"
+          },
+          "from_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Value"
+          },
+          "to_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Value"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "actor_name",
+          "from_value",
+          "to_value",
+          "created_at"
+        ],
+        "title": "TicketEventRead",
+        "description": "One line of a ticket's history. Assignee events carry display names, not ids."
       },
       "TicketPage": {
         "properties": {

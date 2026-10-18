@@ -221,3 +221,28 @@ async def test_calendar_shows_due_tickets_from_my_projects_only(
     assert [t["id"] for t in only_mine] == [mine]
     assert (await stranger.get("/calendar", params=month)).json() == []
     assert too_long.status_code == 422
+
+
+# --- the ticket's activity feed --------------------------------------------------------------
+
+
+async def test_ticket_events_read_as_a_story_with_names(
+    manager: AsyncClient, employee: AsyncClient, project_id: str, login: Any
+) -> None:
+    emp = (await employee.get("/auth/me")).json()["id"]
+    ticket = await create(manager, project_id, assignee_id=emp)
+    await employee.patch(f"/tickets/{ticket}", json={"status": "in_progress"})
+    await manager.patch(f"/tickets/{ticket}", json={"assignee_id": None})
+    stranger = await login("stranger")
+
+    shown = await employee.get(f"/tickets/{ticket}/events")
+    hidden = await stranger.get(f"/tickets/{ticket}/events")
+
+    story = [(e["kind"], e["actor_name"], e["from_value"], e["to_value"]) for e in shown.json()]
+    assert story == [
+        ("created", "Manager", None, None),
+        ("assignee", "Manager", None, "Emp"),
+        ("status", "Emp", "todo", "in_progress"),
+        ("assignee", "Manager", "Emp", None),
+    ]
+    assert hidden.status_code == 404

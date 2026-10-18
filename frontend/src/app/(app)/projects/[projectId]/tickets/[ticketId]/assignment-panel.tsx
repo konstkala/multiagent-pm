@@ -39,7 +39,7 @@ export function AssignmentPanel({ context }: { context: TicketContext }) {
   );
 
   return (
-    <Card title="Suggested assignees">
+    <Card tone="bot" title="Suggested assignees">
       <div className="flex flex-col gap-3">
         {suggestions.isPending ? <p className="text-xs text-muted">Loading…</p> : null}
         {suggestions.isError ? <Alert tone="error">{errorText(suggestions.error)}</Alert> : null}

@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
-from app.db.models import LinkType, TicketCategory, TicketPriority, TicketStatus
+from app.db.models import LinkType, TicketCategory, TicketEventKind, TicketPriority, TicketStatus
 
 # Labels are areas like "database" or "frontend": trimmed and lowercased so they group.
 Label = Annotated[
@@ -116,6 +116,17 @@ class CommentRead(BaseModel):
     body: str
     created_at: datetime
     edited_at: datetime | None
+
+
+class TicketEventRead(BaseModel):
+    """One line of a ticket's history. Assignee events carry display names, not ids."""
+
+    id: uuid.UUID
+    kind: TicketEventKind
+    actor_name: str | None  # None: an agent, or an erased account
+    from_value: str | None
+    to_value: str | None
+    created_at: datetime
 
 
 class AttachmentRead(BaseModel):

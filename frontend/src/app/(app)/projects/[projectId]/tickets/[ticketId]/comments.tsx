@@ -4,18 +4,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
 import { Avatar } from "@/components/tickets";
-import { Alert, Button, Loading } from "@/components/ui";
+import { Alert, Button } from "@/components/ui";
 import { api, call, errorText, send, type Schemas } from "@/lib/api/client";
-import { keys, useComments } from "@/lib/queries";
+import { keys } from "@/lib/queries";
 import { formatTime } from "@/lib/tickets";
 
 import type { TicketContext } from "./ticket-detail";
 
 type Comment = Schemas["CommentRead"];
 
-export function Comments({ context }: { context: TicketContext }) {
+/** The box at the end of the timeline. */
+export function CommentForm({ context }: { context: TicketContext }) {
   const { ticket } = context;
-  const comments = useComments(ticket.id);
   const queryClient = useQueryClient();
   const [body, setBody] = useState("");
   const add = useMutation({
@@ -39,16 +39,6 @@ export function Comments({ context }: { context: TicketContext }) {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">
-        Comments{comments.data ? ` (${comments.data.length})` : ""}
-      </h2>
-      {comments.isPending ? <Loading /> : null}
-      {comments.isError ? <Alert tone="error">{errorText(comments.error)}</Alert> : null}
-      <ol className="flex flex-col gap-3">
-        {comments.data?.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} context={context} />
-        ))}
-      </ol>
       <form onSubmit={onSubmit} className="flex flex-col gap-2">
         <label htmlFor="new-comment" className="sr-only">
           Add a comment
@@ -73,7 +63,7 @@ export function Comments({ context }: { context: TicketContext }) {
   );
 }
 
-function CommentItem({ comment, context }: { comment: Comment; context: TicketContext }) {
+export function CommentItem({ comment, context }: { comment: Comment; context: TicketContext }) {
   const { ticket, me, isManager } = context;
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);

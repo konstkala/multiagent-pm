@@ -1,7 +1,9 @@
 import json
 import logging
-from typing import Any
+from typing import Any, cast
 
+import anthropic
+import httpx
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -283,3 +285,41 @@ async def test_logs_carry_no_ticket_text(
     assert "ACME-SECRET" not in logged
     assert "Login page" not in logged
     assert "triage.proposed" in [r.getMessage() for r in caplog.records]
+
+
+def rejected_request() -> anthropic.BadRequestError:
+    """What the SDK raises when Claude refuses the request itself (here: an unreadable image)."""
+    response = httpx.Response(400, request=httpx.Request("POST", "https://api.anthropic.com"))
+    return anthropic.BadRequestError(
+        "Could not process image", response=cast("Any", response), body=None
+    )
+
+
+async def test_an_unreadable_image_is_dropped_and_triage_still_works(
+    manager: AsyncClient, project_id: str, db_session: AsyncSession, storage: MemoryStorage
+) -> None:
+    ticket = await create(manager, project_id)
+    await manager.post(
+        f"/tickets/{ticket['id']}/attachments", files={"file": ("shot.png", PNG, "image/png")}
+    )
+    claude = FakeClaude(rejected_request(), proposal())
+    latest = (await manager.get(f"/tickets/{ticket['id']}/triage")).json()
+
+    await triage.run(db_session, {"run_id": latest["id"]}, llm=claude.client, storage=storage)
+    run = (await manager.get(f"/tickets/{ticket['id']}/triage")).json()
+
+    first, second = (c["messages"][0]["content"] for c in claude.calls)
+    assert first[0]["type"] == "image" and all(b["type"] == "text" for b in second)
+    assert run["status"] == "proposed" and run["llm_calls"] == 1  # only the answered call counts
+
+
+async def test_a_rejected_request_without_images_fails_at_once(
+    manager: AsyncClient, project_id: str, db_session: AsyncSession
+) -> None:
+    ticket = await create(manager, project_id)
+    claude = FakeClaude(rejected_request())
+
+    run = await run_triage(db_session, manager, ticket["id"], claude)
+
+    assert (run["status"], run["error_code"]) == ("failed", "rejected")
+    assert len(claude.calls) == 1  # retrying the same request can't help

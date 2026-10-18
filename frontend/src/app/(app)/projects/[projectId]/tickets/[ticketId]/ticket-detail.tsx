@@ -11,13 +11,11 @@ import { useUpdateTicket } from "@/lib/mutations";
 import { useMe, useMembers, useProject, useTicket } from "@/lib/queries";
 import { ticketKey } from "@/lib/tickets";
 
-import { AssignmentPanel } from "./assignment-panel";
 import { Attachments } from "./attachments";
-import { Comments } from "./comments";
 import { Relations } from "./relations";
 import { Sidebar } from "./sidebar";
 import { SimilarTickets } from "./similar-tickets";
-import { TriagePanel } from "./triage-panel";
+import { Timeline } from "./timeline";
 
 export type TicketContext = {
   ticket: Ticket;
@@ -57,15 +55,12 @@ export function TicketDetail() {
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <div className="flex min-w-0 flex-col gap-6">
           <Header context={context} />
-          <TriagePanel context={context} />
-          <Description context={context} />
-          <Relations context={context} />
-          <Attachments context={context} />
-          <Comments context={context} />
+          <Timeline context={context} intro={<Description context={context} />} />
         </div>
         <div className="flex flex-col gap-6">
           <Sidebar context={context} />
-          {context.isManager ? <AssignmentPanel context={context} /> : null}
+          <Relations context={context} />
+          <Attachments context={context} />
           <SimilarTickets context={context} />
         </div>
       </div>

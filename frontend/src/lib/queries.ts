@@ -31,6 +31,7 @@ export const keys = {
     ["projects", projectId, "tickets", filters] as const,
   ticket: (ticketId: string) => ["tickets", ticketId] as const,
   comments: (ticketId: string) => ["tickets", ticketId, "comments"] as const,
+  events: (ticketId: string) => ["tickets", ticketId, "events"] as const,
   attachments: (ticketId: string) => ["tickets", ticketId, "attachments"] as const,
   links: (ticketId: string) => ["tickets", ticketId, "links"] as const,
   similar: (ticketId: string) => ["tickets", ticketId, "similar"] as const,
@@ -111,6 +112,14 @@ export function useComments(ticketId: string) {
   });
 }
 
+export function useTicketEvents(ticketId: string) {
+  return useQuery({
+    queryKey: keys.events(ticketId),
+    queryFn: () =>
+      call(api.GET("/tickets/{ticket_id}/events", { params: { path: { ticket_id: ticketId } } })),
+  });
+}
+
 export function useAttachments(ticketId: string) {
   return useQuery({
     queryKey: keys.attachments(ticketId),
@@ -153,7 +162,7 @@ export function useTriage(ticketId: string) {
 }
 
 /** Managers only. The latest suggestion run, or null. Polls every 2 s while reasons are written. */
-export function useAssignmentSuggestions(ticketId: string) {
+export function useAssignmentSuggestions(ticketId: string, enabled = true) {
   return useQuery({
     queryKey: keys.assignment(ticketId),
     queryFn: () =>
@@ -162,6 +171,7 @@ export function useAssignmentSuggestions(ticketId: string) {
           params: { path: { ticket_id: ticketId } },
         }),
       ),
+    enabled, // managers only
     refetchInterval: (query) => (query.state.data?.status === "explaining" ? 2000 : false),
   });
 }

@@ -9,7 +9,12 @@ from anthropic.types import CacheControlEphemeralParam, Message, TextBlockParam
 
 from app.core.config import settings
 from app.core.llm.budget import RunBudget
-from app.core.llm.errors import BudgetExceededError, LLMError, LLMRefusalError
+from app.core.llm.errors import (
+    BudgetExceededError,
+    LLMError,
+    LLMRefusalError,
+    LLMRequestRejectedError,
+)
 from app.core.llm.pricing import MODEL_FOR_TIER, cost_usd
 from app.core.llm.types import Effort, LLMResult, StructuredResult, Tier, Usage, UserContent
 from app.core.logging import log_fields
@@ -170,7 +175,10 @@ class LLMClient:
                 detail=exc.message[:300],  # API's own description; never our prompt
             ),
         )
-        return LLMError(f"{model} call failed: {type(exc).__name__}")
+        message = f"{model} call failed: {type(exc).__name__}"
+        if getattr(exc, "status_code", None) == 400:
+            return LLMRequestRejectedError(message)
+        return LLMError(message)
 
     @staticmethod
     def _check_budget(budget: RunBudget) -> None:

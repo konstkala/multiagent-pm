@@ -16,11 +16,12 @@ from app.schemas.tickets import (
     SimilarTickets,
     TicketBrief,
     TicketCreate,
+    TicketEventRead,
     TicketPage,
     TicketRead,
     TicketUpdate,
 )
-from app.services import comments, links
+from app.services import comments, links, ticket_history
 from app.services import tickets as service
 from app.services.embeddings import Embedder, get_embedder
 from app.services.tickets import TicketFilters
@@ -146,6 +147,14 @@ async def similar_tickets(
             for t, score in found
         ]
     )
+
+
+@router.get("/tickets/{ticket_id}/events", responses=_ERRORS)
+async def list_events(
+    ticket_id: uuid.UUID, session: SessionDep, user: CurrentUser
+) -> list[TicketEventRead]:
+    """The ticket's history: creation, status moves, assignee changes."""
+    return await ticket_history.history(session, ticket_id, user)
 
 
 @router.get("/tickets/{ticket_id}/comments", responses=_ERRORS)

@@ -43,14 +43,14 @@ export function TriagePanel({ context }: { context: TicketContext }) {
   if (triage.isPending) return null;
   if (triage.isError) {
     return (
-      <Card title="AI triage">
+      <Card tone="bot" title="AI triage">
         <Alert tone="error">{errorText(triage.error)}</Alert>
       </Card>
     );
   }
   if (!run) {
     return isManager ? (
-      <Card title="AI triage">
+      <Card tone="bot" title="AI triage">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted">Not triaged yet.</p>
           <RerunButton context={context} label="Triage now" />
@@ -59,7 +59,7 @@ export function TriagePanel({ context }: { context: TicketContext }) {
     ) : null;
   }
   return (
-    <Card title="AI triage" actions={<Badge>{STATUS_TEXT[run.status]}</Badge>}>
+    <Card tone="bot" title="AI triage" actions={<Badge>{STATUS_TEXT[run.status]}</Badge>}>
       <div className="flex flex-col gap-4">
         <RunBody run={run} context={context} />
         <RunCost run={run} />

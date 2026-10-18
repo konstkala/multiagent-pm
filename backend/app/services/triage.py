@@ -3,6 +3,7 @@
 import logging
 import uuid
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
@@ -11,7 +12,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.triage.agent import Image, SimilarTicket, TriageInput, TriageProposal, triage
 from app.core.errors import ConflictError, NotFoundError
-from app.core.llm import BudgetExceededError, LLMClient, LLMError, LLMRefusalError, RunBudget
+from app.core.llm import (
+    BudgetExceededError,
+    LLMClient,
+    LLMError,
+    LLMRefusalError,
+    LLMRequestRejectedError,
+    RunBudget,
+    StructuredResult,
+)
 from app.core.llm.content import ImageType
 from app.core.logging import log_fields
 from app.db.models import (
@@ -155,8 +164,8 @@ async def run(
             question=triage_run.question,
             answer=triage_run.answer,
         )
-        result = await triage(llm(), data, budget)
-    except (LLMRefusalError, BudgetExceededError) as exc:
+        result = await _triage_dropping_bad_images(llm(), data, budget, triage_run.id)
+    except (LLMRefusalError, BudgetExceededError, LLMRequestRejectedError) as exc:
         await _fail(session, triage_run, _error_code(exc))  # retrying won't help
         return
     except (LLMError, StorageError) as exc:
@@ -313,12 +322,30 @@ async def _fail(session: AsyncSession, triage_run: TriageRun, code: str) -> None
     logger.warning("triage.failed", extra=log_fields(triage_run_id=triage_run.id, error=code))
 
 
+async def _triage_dropping_bad_images(
+    client: LLMClient, data: TriageInput, budget: RunBudget, run_id: uuid.UUID
+) -> StructuredResult[TriageProposal]:
+    """An attachment that looks like an image but isn't (corrupt, truncated) makes Claude reject
+    the whole request. The ticket's text is still worth triaging: try once without images."""
+    try:
+        return await triage(client, data, budget)
+    except LLMRequestRejectedError:
+        if not data.images:
+            raise
+        logger.warning(
+            "triage.images_dropped", extra=log_fields(triage_run_id=run_id, images=len(data.images))
+        )
+        return await triage(client, replace(data, images=[]), budget)
+
+
 def _error_code(exc: Exception) -> str:
     """A short code the manager sees. Never the exception text: it could echo ticket content."""
     if isinstance(exc, LLMRefusalError):
         return "refused"
     if isinstance(exc, BudgetExceededError):
         return "over_budget"
+    if isinstance(exc, LLMRequestRejectedError):
+        return "rejected"
     if isinstance(exc, StorageError):
         return "storage_unavailable"
     return "ai_unavailable"

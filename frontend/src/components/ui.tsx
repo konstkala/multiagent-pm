@@ -86,11 +86,27 @@ export function Alert({ tone, children }: { tone: "error" | "success" | "info"; 
   );
 }
 
-export function Card({ title, actions, children }: { title?: string; actions?: ReactNode; children: ReactNode }) {
+export function Card({
+  title,
+  actions,
+  tone = "default",
+  children,
+}: {
+  title?: string;
+  actions?: ReactNode;
+  /** "bot": an entry written by an agent, tinted blue like a bot comment on GitHub. */
+  tone?: "default" | "bot";
+  children: ReactNode;
+}) {
+  const bot = tone === "bot";
   return (
-    <section className="rounded-sm border border-border bg-surface">
+    <section className={`rounded-lg border ${bot ? "border-bot-border" : "border-border"} bg-surface`}>
       {title ? (
-        <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <header
+          className={`flex items-center justify-between gap-3 border-b px-4 py-3 ${
+            bot ? "border-bot-border bg-bot" : "border-border"
+          }`}
+        >
           <h2 className="text-sm font-semibold">{title}</h2>
           {actions}
         </header>
