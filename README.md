@@ -214,4 +214,4 @@ docs/
 | 7b | Cloud deployment with Terraform (staging, prod), tracing and alerts | Postponed |
 | 8 | Kubernetes (local cluster, Helm, GitOps) | Planned |
 
-More: [CLAUDE.md](CLAUDE.md) (project conventions) · [docs/learning/roadmap.md](docs/learning/roadmap.md) · [docs/adr/](docs/adr/)
+More: [CHANGELOG.md](CHANGELOG.md) (what changed) · [what's left](docs/plans/remaining-work.md) · [CLAUDE.md](CLAUDE.md) (project conventions) · [docs/learning/roadmap.md](docs/learning/roadmap.md) · [docs/adr/](docs/adr/)
