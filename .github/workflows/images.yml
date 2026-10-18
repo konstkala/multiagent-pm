@@ -71,6 +71,9 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
           version: v0.75.0
+          # Vulnerabilities only: gitleaks covers secrets in our code, and secret rules match
+          # docstring examples inside third-party packages (false positives).
+          scanners: vuln
           format: sarif
           output: trivy.sarif
           severity: HIGH,CRITICAL
@@ -84,6 +87,7 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
           version: v0.75.0
+          scanners: vuln
           severity: CRITICAL
           ignore-unfixed: true
           exit-code: "1"

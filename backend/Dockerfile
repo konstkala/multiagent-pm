@@ -18,6 +18,10 @@ RUN /app/.venv/bin/python -c "from fastembed import TextEmbedding; TextEmbedding
 
 # Stage 2: the image we ship. No uv, no compilers, no dev tools.
 FROM python:3.12-slim AS runtime
+# Security fixes released since the base image was built (Trivy found a fixable CRITICAL
+# in perl-base). Production pins the base by digest and lets Dependabot move it.
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 RUN useradd --system --uid 10001 --no-create-home app
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv

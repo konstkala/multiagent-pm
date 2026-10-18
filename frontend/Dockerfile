@@ -18,6 +18,10 @@ RUN npm run build
 
 # Stage 3: the image we ship: the standalone server, its static files, nothing else.
 FROM node:24-slim AS runtime
+# Security fixes released since the base image was built (Trivy found a fixable CRITICAL
+# in perl-base). Production pins the base by digest and lets Dependabot move it.
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
