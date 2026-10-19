@@ -1,6 +1,7 @@
 from app.db.models.assignment import AssignmentRun, AssignmentStatus
 from app.db.models.job import Job, JobStatus
 from app.db.models.profile import CvImport, CvImportStatus, EmployeeProfile, ProfileSkill
+from app.db.models.split import SplitRun, SplitStatus
 from app.db.models.ticket import (
     STORY_POINTS,
     LinkType,
@@ -53,6 +54,8 @@ __all__ = [
     "ProjectMember",
     "ProjectRole",
     "RateLimitBucket",
+    "SplitRun",
+    "SplitStatus",
     "Ticket",
     "TicketAttachment",
     "TicketCategory",

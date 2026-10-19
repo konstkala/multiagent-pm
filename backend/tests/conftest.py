@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -21,6 +22,13 @@ from app.main import app
 from app.services.email import get_email_sender
 from app.services.embeddings import Embedder, get_embedder
 from tests.fakes import FakeEmbedder, Outbox
+
+# psycopg (LangGraph's checkpointer) can't run on Windows' default Proactor event loop.
+if sys.platform == "win32":
+    # Deprecated from Python 3.14, which this project does not use (requires-python is 3.12).
+    asyncio.set_event_loop_policy(  # pyright: ignore[reportDeprecated]
+        asyncio.WindowsSelectorEventLoopPolicy()  # pyright: ignore[reportDeprecated]
+    )
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_DB = "pm_test"

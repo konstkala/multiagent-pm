@@ -4,11 +4,18 @@ import type { ReactNode } from "react";
 
 import { Alert, Loading } from "@/components/ui";
 import { errorText, type Schemas } from "@/lib/api/client";
-import { useAssignmentSuggestions, useComments, useTicketEvents, useTriage } from "@/lib/queries";
+import {
+  useAssignmentSuggestions,
+  useComments,
+  useSplit,
+  useTicketEvents,
+  useTriage,
+} from "@/lib/queries";
 import { STATUS_LABEL, formatTime, pick, STATUSES } from "@/lib/tickets";
 
 import { AssignmentPanel } from "./assignment-panel";
 import { CommentForm, CommentItem } from "./comments";
+import { SplitPanel, canSplit } from "./split-panel";
 import type { TicketContext } from "./ticket-detail";
 import { TriagePanel } from "./triage-panel";
 
@@ -26,6 +33,8 @@ export function Timeline({ context, intro }: { context: TicketContext; intro: Re
   const events = useTicketEvents(ticket.id);
   const triage = useTriage(ticket.id);
   const assignment = useAssignmentSuggestions(ticket.id, isManager);
+  const showSplit = canSplit(context);
+  const split = useSplit(ticket.id, showSplit);
 
   const entries: Entry[] = [];
   for (const comment of comments.data ?? []) {
@@ -50,6 +59,13 @@ export function Timeline({ context, intro }: { context: TicketContext; intro: Re
       at: assignment.data?.created_at ?? "9999",
       key: "assignment",
       node: <AssignmentPanel context={context} />,
+    });
+  }
+  if (showSplit) {
+    entries.push({
+      at: split.data?.created_at ?? "9999",
+      key: "split",
+      node: <SplitPanel context={context} />,
     });
   }
   entries.sort((a, b) => a.at.localeCompare(b.at));

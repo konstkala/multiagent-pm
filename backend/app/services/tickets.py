@@ -51,6 +51,22 @@ async def create_ticket(
     embedder: Embedder,
 ) -> Ticket:
     await access.require_manager(session, project_id, actor)
+    ticket = await add_ticket(session, project_id, data, actor, embedder)
+    await session.commit()
+    await session.refresh(ticket)
+    log_ticket_created(ticket, actor)
+    return ticket
+
+
+async def add_ticket(
+    session: AsyncSession,
+    project_id: uuid.UUID,
+    data: TicketCreate,
+    actor: User,
+    embedder: Embedder,
+) -> Ticket:
+    """Everything of creating a ticket except the commit, so a caller can create several in one
+    transaction. The caller has already checked that the actor may create tickets."""
     if data.assignee_id is not None:
         await _check_assignee(session, project_id, data.assignee_id)
     if data.parent_id is not None:
@@ -71,15 +87,20 @@ async def create_ticket(
         )
     # Same transaction: a ticket is never saved without its triage run, or the reverse.
     await triage_queue.enqueue(session, ticket, TriageTrigger.CREATED)
-    await session.commit()
-    await session.refresh(ticket)
+    return ticket
+
+
+def log_ticket_created(ticket: Ticket, actor: User, **extra: object) -> None:
     logger.info(
         "audit.ticket.created",
         extra=log_fields(
-            actor=actor.id, project_id=project_id, ticket_id=ticket.id, title_len=len(ticket.title)
+            actor=actor.id,
+            project_id=ticket.project_id,
+            ticket_id=ticket.id,
+            title_len=len(ticket.title),
+            **extra,
         ),
     )
-    return ticket
 
 
 async def copy_ticket(

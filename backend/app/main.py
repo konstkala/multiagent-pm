@@ -14,6 +14,7 @@ from app.api import (
     health,
     invitations,
     people,
+    splits,
     tickets,
     triage,
     workspaces,
@@ -70,4 +71,5 @@ app.include_router(tickets.router)
 app.include_router(attachments.router)
 app.include_router(triage.router)
 app.include_router(assignment.router)
+app.include_router(splits.router)
 app.include_router(dashboards.router)

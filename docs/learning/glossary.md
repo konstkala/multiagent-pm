@@ -107,6 +107,12 @@ A few words each. New technologies are added as they appear.
 | **Backfill (data migration)** | A migration that fills new tables from existing data, kept separate from schema changes | Old tickets got approximate history; the dashboard says from when it's exact |
 | **Cycle time / lead time / throughput** | Start → done / created → done / done per week | The core flow KPIs of agile teams (Kanban) |
 | **Percentiles (p50, p90, p95)** | The value below which 50 / 90 / 95% of cases fall | Medians resist outliers; p90/p95 show the slow tail people actually feel |
+| **LangGraph** | A library that runs an agent as a graph of steps (nodes) joined by edges, with saved state | The ticket splitter has a loop, a branch and a pause for a person; a graph says that directly (ADR 0021) |
+| **StateGraph / node / edge** | The shared state dict, the functions that update it, and the arrows between them | Each node returns only what it changes; a *conditional edge* is a function that picks the next node |
+| **Checkpointer** | Saves the graph's state after every step, keyed by a `thread_id` | A crash or a restart resumes the run where it stopped; we use Postgres (`PostgresSaver`) |
+| **Interrupt / `Command(resume=…)`** | A node pauses the graph and hands a value out; the answer re-enters the same node | The manager's approval: nothing is created until they pick sub-tickets |
+| **Reflection loop (draft → critique → revise)** | One model writes, another judges, the writer fixes, with a hard round limit | A stronger model (Sonnet) reviews a cheaper one (Haiku); the cap keeps cost bounded |
+| **psycopg** | The Postgres driver LangGraph's checkpointer uses (we use asyncpg elsewhere) | Same database, second driver; on Windows it needs the selector event loop |
 
 ### CI/CD and supply chain
 
@@ -146,7 +152,6 @@ A few words each. New technologies are added as they appear.
 
 | Tech | What it is | Why we'll use it |
 |---|---|---|
-| **LangGraph** | Agent workflow framework | Graph of steps, checkpoints, human approval pauses |
 | **PydanticAI** | Typed LLM agents | Structured, validated LLM outputs |
 | **Claude API** | Anthropic's LLM API | Haiku for workers, Sonnet for planning |
 | **Langfuse** | LLM observability | Traces, tokens, $ per run |

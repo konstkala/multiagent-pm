@@ -37,6 +37,7 @@ export const keys = {
   similar: (ticketId: string) => ["tickets", ticketId, "similar"] as const,
   triage: (ticketId: string) => ["tickets", ticketId, "triage"] as const,
   assignment: (ticketId: string) => ["tickets", ticketId, "assignment"] as const,
+  split: (ticketId: string) => ["tickets", ticketId, "split"] as const,
   dashboard: (projectId: string, range: DateRange) =>
     ["projects", projectId, "dashboard", range] as const,
   agentMetrics: (projectId: string, range: DateRange) =>
@@ -173,6 +174,20 @@ export function useAssignmentSuggestions(ticketId: string, enabled = true) {
       ),
     enabled, // managers only
     refetchInterval: (query) => (query.state.data?.status === "explaining" ? 2000 : false),
+  });
+}
+
+/** Managers only. The latest split run, or null. Polls every 2 s while the graph is working. */
+export function useSplit(ticketId: string, enabled = true) {
+  return useQuery({
+    queryKey: keys.split(ticketId),
+    queryFn: () =>
+      call(api.GET("/tickets/{ticket_id}/split", { params: { path: { ticket_id: ticketId } } })),
+    enabled,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "queued" || status === "running" || status === "resuming" ? 2000 : false;
+    },
   });
 }
 

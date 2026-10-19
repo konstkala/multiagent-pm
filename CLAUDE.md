@@ -85,6 +85,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 13. Assignment scoring: lazy profile embeddings, the LLM sees letters + facts only, every pick recorded for a hit rate (0017). Job priority: interactive before background (0018).
 14. Ticket history in a `ticket_events` table; KPIs are SQL computed on request, rollups only once measured slow (0019).
 15. CI/CD on GitHub Actions; images on GHCR with SBOM, signed provenance and Trivy; built once, deployed by tag (0020).
+16. LangGraph only for the ticket splitter, where a loop and a human pause earn it; graph nodes still call `core/llm`; DB writes stay in the service, not the graph (0021).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.

@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import signal
+import sys
 import time
 from collections.abc import Awaitable, Callable, Mapping
 from contextlib import AbstractAsyncContextManager, suppress
@@ -17,7 +18,8 @@ from app.core.llm import LLMClient, create_llm_client
 from app.core.logging import configure_logging, log_fields, run_id_var
 from app.db.session import SessionLocal, engine
 from app.healthcheck import HEARTBEAT
-from app.services import assignment, cv_imports, jobs, triage, triage_queue
+from app.services import assignment, cv_imports, jobs, splits, triage, triage_queue
+from app.services.embeddings import get_embedder
 from app.services.storage import get_storage
 
 logger = logging.getLogger(__name__)
@@ -106,10 +108,14 @@ def handlers() -> dict[str, Handler]:
     async def assignment_reasons(session: AsyncSession, payload: dict[str, Any]) -> None:
         await assignment.run(session, payload, llm=_llm)
 
+    async def ticket_split(session: AsyncSession, payload: dict[str, Any]) -> None:
+        await splits.run(session, payload, llm=_llm, embedder=get_embedder())
+
     return {
         cv_imports.JOB_KIND: cv_import,
         triage_queue.JOB_KIND: triage_ticket,
         assignment.JOB_KIND: assignment_reasons,
+        splits.JOB_KIND: ticket_split,
     }
 
 
@@ -129,4 +135,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # psycopg (LangGraph's checkpointer) can't use Windows' default Proactor event loop; asyncpg
+    # works on the selector loop too. Linux and macOS already use the selector loop.
+    loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
+    asyncio.run(main(), loop_factory=loop_factory)

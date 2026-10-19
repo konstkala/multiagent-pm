@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from app.agents.checkpoint import LANGGRAPH_TABLES
 from app.core.config import settings
 from app.db import models  # noqa: F401  (registers tables for autogenerate)
 from app.db.base import Base
@@ -34,8 +35,15 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def include_name(name: str | None, type_: str, parent_names: dict[str, str | None]) -> bool:
+    # LangGraph's checkpoint tables are not in our models; autogenerate must not drop them.
+    return not (type_ == "table" and name in LANGGRAPH_TABLES)
+
+
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection, target_metadata=target_metadata, include_name=include_name
+    )
     with context.begin_transaction():
         context.run_migrations()
 
