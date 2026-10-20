@@ -86,7 +86,7 @@ export function InviteView() {
         <div className="flex flex-col gap-2">
           <Link
             href={`/sign-in?next=${encodeURIComponent(here)}`}
-            className="inline-flex justify-center rounded-sm bg-accent px-3.5 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong"
+            className="lift inline-flex justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-strong"
           >
             Sign in to accept
           </Link>

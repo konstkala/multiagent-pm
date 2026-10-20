@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAt
 const buttonStyles = {
   primary: "bg-accent text-on-accent hover:bg-accent-strong disabled:opacity-60",
   secondary:
-    "bg-subtle text-foreground border border-control hover:bg-border disabled:opacity-60",
+    "bg-surface text-foreground border border-control hover:bg-subtle disabled:opacity-60",
   danger: "bg-surface text-danger border border-control hover:bg-subtle disabled:opacity-60",
 } as const;
 
@@ -25,7 +25,7 @@ export function Button({
       {...props}
       disabled={disabled || pending}
       aria-busy={pending}
-      className={`inline-flex items-center justify-center gap-2 rounded-sm px-3.5 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${buttonStyles[variant]} ${className}`}
+      className={`lift inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${buttonStyles[variant]} ${className}`}
     >
       {pending ? "Working…" : children}
     </button>
@@ -45,7 +45,7 @@ export function TextField({ label, hint, id, name, ...props }: FieldProps) {
         id={fieldId}
         name={name}
         {...props}
-        className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+        className="rounded-md border border-control bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
       />
       {hint ? <p className="text-xs text-muted">{hint}</p> : null}
     </div>
@@ -65,7 +65,7 @@ export function Select({ label, id, name, children, ...props }: SelectProps) {
         id={fieldId}
         name={name}
         {...props}
-        className="rounded-sm border border-control bg-surface px-3 py-2 text-sm outline-none focus:border-ring"
+        className="rounded-md border border-control bg-surface px-3 py-2.5 text-sm outline-none focus:border-ring"
       >
         {children}
       </select>
@@ -80,7 +80,7 @@ export function Alert({ tone, children }: { tone: "error" | "success" | "info"; 
     info: "border-border bg-subtle text-muted",
   };
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={`rounded-sm border px-3 py-2 text-sm ${tones[tone]}`}>
+    <div role={tone === "error" ? "alert" : "status"} className={`rounded-md border px-3.5 py-2.5 text-sm ${tones[tone]}`}>
       {children}
     </div>
   );
@@ -99,13 +99,16 @@ export function Card({
   children: ReactNode;
 }) {
   const bot = tone === "bot";
-  // Plain cards are just a hairline and white space; only agent entries get a tinted header.
+  // Plain cards are a hairline, a soft shadow and white space; only agent entries get a tinted
+  // header (rounded to follow the card's corners).
   return (
-    <section className={`rounded-lg border ${bot ? "border-bot-border" : "border-border"} bg-surface`}>
+    <section
+      className={`rounded-lg border shadow-card ${bot ? "border-bot-border" : "border-border"} bg-surface`}
+    >
       {title ? (
         <header
           className={`flex items-center justify-between gap-3 px-5 py-3.5 ${
-            bot ? "border-b border-bot-border bg-bot" : "pb-0"
+            bot ? "rounded-t-lg border-b border-bot-border bg-bot" : "pb-0"
           }`}
         >
           <h2 className="text-sm font-semibold">{title}</h2>
@@ -119,7 +122,7 @@ export function Card({
 
 export function Badge({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-sm border border-border bg-subtle px-2 py-0.5 text-xs font-medium text-muted">
+    <span className="rounded-full border border-border bg-subtle px-2.5 py-0.5 text-xs font-medium text-muted">
       {children}
     </span>
   );

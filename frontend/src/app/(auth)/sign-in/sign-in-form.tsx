@@ -71,7 +71,7 @@ export function SignInForm() {
           {/* A full page navigation: the browser must visit Google, not fetch it. */}
           <a
             href="/api/auth/google/start"
-            className="inline-flex items-center justify-center rounded-sm border border-border bg-surface px-3.5 py-2 text-sm font-medium hover:bg-subtle"
+            className="lift inline-flex items-center justify-center rounded-full border border-control bg-surface px-4 py-2 text-sm font-medium hover:bg-subtle"
           >
             Continue with Google
           </a>

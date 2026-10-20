@@ -15,6 +15,29 @@ async function violations(page: Page) {
     .map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(" ")).slice(0, 3).join(" | ")}`);
 }
 
+// The landing page and the sign-in screens are the first thing a stranger sees: white and mint
+// text on the navy hero, green buttons, text over gradients. Checked signed out, both themes.
+test.describe("public pages", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  for (const scheme of ["light", "dark"] as const) {
+    test(`landing and sign-in pages have no serious accessibility problems (${scheme})`, async ({
+      page,
+    }) => {
+      // Reduced motion shows every section at once: the scroll-reveal would otherwise leave the
+      // sections below the fold transparent, and contrast can't be measured on invisible text.
+      await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
+      const problems: string[] = [];
+      for (const path of ["/", "/sign-in", "/sign-up", "/forgot-password"]) {
+        await page.goto(path);
+        await page.waitForLoadState("networkidle");
+        problems.push(...(await violations(page)).map((v) => `${path}: ${v}`));
+      }
+      expect(problems).toEqual([]);
+    });
+  }
+});
+
 for (const scheme of ["light", "dark"] as const) {
   test(`main pages have no serious accessibility problems (${scheme})`, async ({ page }) => {
     const { projectId } = data();

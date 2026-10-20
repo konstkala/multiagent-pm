@@ -15,7 +15,7 @@ export function ProjectsView() {
   if (workspaces.isError) return <Alert tone="error">{errorText(workspaces.error)}</Alert>;
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Projects</h1>
       {workspaces.data.length === 0 ? (
         <CreateWorkspace />
       ) : (
@@ -72,10 +72,12 @@ function WorkspaceSection({ workspace }: { workspace: Workspace }) {
           <li key={project.id}>
             <Link
               href={`/projects/${project.id}`}
-              className="flex h-full flex-col gap-2 rounded-sm border border-border bg-surface p-4 hover:border-control"
+              className="lift flex h-full flex-col gap-3 rounded-lg border border-border bg-surface p-5 shadow-card hover:border-control hover:shadow-float"
             >
-              <span className="font-mono text-xs text-muted">{project.key}</span>
-              <span className="font-medium">{project.name}</span>
+              <span className="self-start rounded-full bg-subtle px-2.5 py-0.5 font-mono text-xs text-muted">
+                {project.key}
+              </span>
+              <span className="text-lg font-semibold tracking-tight">{project.name}</span>
               <span className="mt-auto">
                 <Badge>{project.role}</Badge>
               </span>

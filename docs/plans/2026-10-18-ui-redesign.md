@@ -1,5 +1,7 @@
 # UI redesign: "C · Paper" across the app (with a browser-test safety net first)
 
+> **Superseded in part, 2026-10-20 (ADR 0022):** the colours, sharp corners and edge-to-edge white are replaced by the "Harbour" look (tinted canvas, rounded sheets, pill buttons, navy hero). The structure below (sidebar, ticket timeline with bot entries, light and dark, phone layouts, browser tests) still holds.
+
 ## Context
 Every screen is still the plain "functional for now" version. On 2026-10-18 the user chose direction **C · Paper** from three mockups: GitHub-like, white, text-first, agents shown as "bot" entries in the ticket timeline, **sharp 3–4 px corners**, green accent, light **and** dark mode, a left sidebar, usable on phones. The source of truth is https://claude.ai/artifact/3jyxBC1WQxHqey8ER8CYg8 (artboards "C · Paper, light" and "C · Paper, dark"; token sets in `Paper.dc.html`'s `renderVals`).
 

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
+import { Logo } from "@/components/logo";
 import { Alert, Button, Loading } from "@/components/ui";
 import { api, errorText, send, type Workspace } from "@/lib/api/client";
 import { useMe, useProjects, useWorkspaces } from "@/lib/queries";
@@ -20,17 +21,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const open = openAt === pathname;
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col md:flex-row">
-      <header className="flex items-center justify-between border-b border-border px-4 py-3 md:hidden">
-        <Link href="/projects" className="font-semibold tracking-tight">
-          Multiagent PM
+    // The canvas: the sidebar and the page float on it as rounded white sheets.
+    <div className="flex min-h-screen flex-1 flex-col gap-3 p-3 md:flex-row md:gap-4 md:p-4">
+      <header className="flex items-center justify-between rounded-full border border-border bg-surface py-2 pr-2 pl-4 shadow-float md:hidden">
+        <Link href="/projects">
+          <Logo />
         </Link>
         <button
           type="button"
           aria-expanded={open}
           aria-controls="sidebar"
           onClick={() => setOpenAt(open ? null : pathname)}
-          className="rounded-sm border border-control px-3 py-1.5 text-sm"
+          className="rounded-full border border-control px-4 py-1.5 text-sm"
         >
           Menu
         </button>
@@ -38,10 +40,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <aside
         id="sidebar"
-        className={`${open ? "flex" : "hidden"} w-full shrink-0 flex-col gap-6 border-border px-3 py-5 md:sticky md:top-0 md:flex md:h-screen md:w-60 md:overflow-y-auto md:border-r`}
+        className={`${open ? "flex" : "hidden"} w-full shrink-0 flex-col gap-6 rounded-xl border border-border bg-surface px-3 py-5 shadow-card md:sticky md:top-4 md:flex md:h-[calc(100vh-2rem)] md:w-60 md:overflow-y-auto`}
       >
-        <Link href="/projects" className="hidden px-2 font-semibold tracking-tight md:block">
-          Multiagent PM
+        <Link href="/projects" className="hidden px-2 md:block">
+          <Logo />
         </Link>
         <nav aria-label="Main" className="flex flex-col gap-0.5">
           <NavLink href="/me" current={pathname === "/me"}>
@@ -55,10 +57,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         {me.data ? <Account name={me.data.display_name} /> : null}
       </aside>
 
-      <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 px-5 py-8 md:px-12 md:py-12">
-        {me.isPending ? <Loading /> : null}
-        {me.isError ? <Alert tone="error">{errorText(me.error)}</Alert> : null}
-        {me.data ? children : null}
+      <main className="min-w-0 flex-1 rounded-xl border border-border bg-surface shadow-card">
+        <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-10">
+          {me.isPending ? <Loading /> : null}
+          {me.isError ? <Alert tone="error">{errorText(me.error)}</Alert> : null}
+          {me.data ? children : null}
+        </div>
       </main>
     </div>
   );
@@ -69,10 +73,11 @@ function NavLink({ href, current, children }: { href: string; current: boolean; 
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={`rounded-sm px-2 py-1.5 text-sm hover:bg-subtle ${
-        current ? "bg-subtle font-semibold shadow-[inset_2px_0_0_var(--accent)]" : ""
+      className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm hover:bg-subtle ${
+        current ? "bg-accent/10 font-semibold" : ""
       }`}
     >
+      {current ? <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" /> : null}
       {children}
     </Link>
   );
@@ -146,7 +151,7 @@ function ThemeToggle() {
   );
 
   return (
-    <div role="group" aria-label="Theme" className="flex overflow-hidden rounded-sm border border-control text-xs">
+    <div role="group" aria-label="Theme" className="flex overflow-hidden rounded-full border border-control text-xs">
       {THEMES.map((option) => (
         <button
           key={option}

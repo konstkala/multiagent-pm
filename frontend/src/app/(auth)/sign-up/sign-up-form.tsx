@@ -81,7 +81,8 @@ export function SignUpForm() {
       </form>
       <p className="text-sm text-muted">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-link hover:underline">
+        {/* Underlined: inside a sentence, colour alone isn't enough to tell a link apart. */}
+        <Link href="/sign-in" className="text-link underline underline-offset-2">
           Sign in
         </Link>
       </p>

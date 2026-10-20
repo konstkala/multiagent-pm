@@ -86,6 +86,7 @@ Backend commands run from `backend/`. If `uv` isn't on PATH, use `python -m uv`.
 14. Ticket history in a `ticket_events` table; KPIs are SQL computed on request, rollups only once measured slow (0019).
 15. CI/CD on GitHub Actions; images on GHCR with SBOM, signed provenance and Trivy; built once, deployed by tag (0020).
 16. LangGraph only for the ticket splitter, where a loop and a human pause earn it; graph nodes still call `core/llm`; DB writes stay in the service, not the graph (0021).
+17. UI: the "Harbour" look (tinted canvas, rounded sheets, pill buttons, navy hero, green actions) replaces "C · Paper"; tokens only, CSS-only motion, public pages in the accessibility scan (0022).
 
 ## Learning goals (DevOps + AI engineering)
 Roadmap and progress: `docs/learning/roadmap.md`.
@@ -103,6 +104,6 @@ Roadmap and progress: `docs/learning/roadmap.md`.
 - New decision → new ADR in `docs/adr/`.
 - Done means: tests pass, cost impact noted.
 - Area rules: `.claude/rules/` (agents, api, db, tests, frontend load for their paths; logging always loads).
-- Look at the UI, don't guess: the Playwright MCP (`.mcp.json`) opens the running app. After a UI change, screenshot it at 1440 and 390 px wide, light and dark, and compare with the chosen mockup (https://claude.ai/artifact/3jyxBC1WQxHqey8ER8CYg8, "C · Paper"). Browser tests: `npm run e2e` in `frontend/` (stack running).
+- Look at the UI, don't guess: the Playwright MCP (`.mcp.json`) opens the running app. After a UI change, screenshot it at 1440 and 390 px wide, light and dark, and compare with the reference look: the "Harbour" direction (ADR 0022; reference site media-harbour.com, sharp "C · Paper" is superseded). Public pages must pass the axe scan in both themes. Browser tests: `npm run e2e` in `frontend/` (stack running).
 - Guard hook: `.claude/hooks/guard_commands.py` blocks force pushes, history rewrites, repo deletion or visibility changes and `terraform apply|destroy`. When blocked, give the user the exact command to run.
 - Prompting cheat sheet: `docs/claude-code-cheatsheet.md`.

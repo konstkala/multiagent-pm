@@ -73,6 +73,12 @@ A few words each. New technologies are added as they appear.
 | **ID token (JWT)** | A signed token from Google stating who signed in | We check signature, issuer, audience, expiry and nonce before trusting it |
 | **PKCE** | A one-time secret proving the code exchange comes from whoever started sign-in | A stolen authorization code is useless on its own |
 | **state / nonce** | Random values tying Google's answer to this browser and this attempt | Stops login CSRF and token replay |
+| **Design tokens** | Named values (colours, radii, shadows) defined once and used everywhere | A whole restyle was a change to `globals.css`, not a hunt through 23 files (ADR 0022) |
+| **Scroll-driven animation (`animation-timeline: view()`)** | CSS that ties an animation to how far an element has scrolled into view | Scroll-reveal with no JavaScript; behind `@supports`, so browsers without it just show the content |
+| **`prefers-reduced-motion`** | A system setting for people who find motion uncomfortable | All hero and reveal motion switches off; also a real accessibility requirement |
+| **WCAG contrast (AA)** | Minimum text-to-background contrast: 4.5:1 for normal text | White and mint text over the navy hero is measured by axe in CI, in light and dark |
+| **axe-core** | An automated accessibility checker | Catches roughly a third of problems for free, e.g. a link told apart only by colour (WCAG 1.4.1) |
+| **LCP (Largest Contentful Paint)** | When the biggest thing above the fold finishes loading | The hero screenshot is the LCP element, so it loads eagerly with high fetch priority |
 
 ### Background work
 

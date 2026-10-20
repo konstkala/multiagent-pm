@@ -22,27 +22,32 @@ export function ProjectHeader() {
   if (project.isPending) return <Loading />;
   if (project.isError) return <Alert tone="error">{errorText(project.error)}</Alert>;
   return (
-    <div className="flex flex-col gap-4 border-b border-border pb-0">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1">
         <Link href="/projects" className="text-sm text-link hover:underline">
           ← All projects
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{project.data.name}</h1>
-          <span className="font-mono text-sm text-muted">{project.data.key}</span>
+          <h1 className="text-3xl font-semibold tracking-tight">{project.data.name}</h1>
+          <span className="rounded-full bg-subtle px-2.5 py-0.5 font-mono text-sm text-muted">
+            {project.data.key}
+          </span>
           <Badge>{project.data.role}</Badge>
         </div>
       </div>
-      <nav aria-label="Project sections" className="-mb-px flex gap-1">
+      <nav
+        aria-label="Project sections"
+        className="flex max-w-full gap-1 self-start overflow-x-auto rounded-full bg-subtle p-1"
+      >
         {tabs.map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
             aria-current={tab.active ? "page" : undefined}
-            className={`border-b-2 px-3 py-2 text-sm font-medium ${
+            className={`rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
               tab.active
-                ? "border-accent text-foreground"
-                : "border-transparent text-muted hover:text-foreground"
+                ? "bg-surface text-foreground shadow-card"
+                : "text-muted hover:text-foreground"
             }`}
           >
             {tab.label}
