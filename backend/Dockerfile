@@ -2,7 +2,7 @@
 
 # Stage 1: build the virtual environment. uv and its caches stay in this stage.
 # Production would pin the base image by digest (python:3.12-slim@sha256:...).
-FROM python:3.12-slim AS builder
+FROM python:3.15-slim AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.13.1 /uv /usr/local/bin/uv
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never
 WORKDIR /app
@@ -17,7 +17,7 @@ ARG EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
 RUN /app/.venv/bin/python -c "from fastembed import TextEmbedding; TextEmbedding('${EMBEDDING_MODEL}', cache_dir='/models')"
 
 # Stage 2: the image we ship. No uv, no compilers, no dev tools.
-FROM python:3.12-slim AS runtime
+FROM python:3.15-slim AS runtime
 # Security fixes released since the base image was built (Trivy found a fixable CRITICAL
 # in perl-base). Production pins the base by digest and lets Dependabot move it.
 RUN apt-get update && apt-get upgrade -y --no-install-recommends \
